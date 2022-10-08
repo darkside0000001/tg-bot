@@ -1,12 +1,9 @@
 package org.example;
-
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.util.Scanner;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 public class Main {
     public static void main(String args[]) {
@@ -16,13 +13,12 @@ public class Main {
         if (modeSelection.equals("Telegram")) {
             try {
                 TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-                telegramBotsApi.registerBot(new Bot());
+                telegramBotsApi.registerBot(new TelegramBot());
             } catch (TelegramApiException e) {
                 e.printStackTrace();
             }
         } else if (modeSelection.equals("Console")) {
-            Bot bot = new Bot();
-            bot.Console();
+            ConsoleBot bot = new ConsoleBot();
         }
     }
 }
