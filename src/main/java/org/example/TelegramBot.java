@@ -21,7 +21,7 @@ import java.util.Scanner;
 
 
 public class TelegramBot extends TelegramLongPollingBot {
-    private String BotToken = "5519928315:AAG9QuA3vrMe_csK1PYedjCOioSKJsYeyFA";
+    private String BotToken = System.getenv("BOT_TOKEN");
     private String BotName = "Mbot";
     public TelegramBot() {
     }
