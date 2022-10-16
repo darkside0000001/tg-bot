@@ -1,23 +1,20 @@
-import org.example.Bot;
+import org.example.BotLogic;
 import org.junit.jupiter.api.Test;
-import org.telegram.telegrambots.meta.api.objects.Update;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 public class Tests {
-    Bot bot = new Bot();
+    BotLogic lBot = new BotLogic();
     @Test
-    public void getToken() {
-        assertEquals(System.getenv("BOT_TOKEN"), bot.getBotToken());
+    public void testSee() {
+        assertEquals("Модели какого товара хотите посмотреть?", lBot.parseMessage("/seeModels"));
     }
     @Test
-    public void getName() {
-        assertEquals(System.getenv("BOT_NAME"), bot.getBotUsername());
+    public void testStart() {
+        assertEquals("Приветствую в нашем магазине. Наберите /help для просмотра списка команд", lBot.parseMessage("/start"));
     }
     @Test
     public void testHelp() {
-        assertEquals("Бот может копировать сообщения", bot.parseMessage("/help"));
+        assertEquals("/get - вывод списка товаров, /seeModels - вывод моделей товаров", lBot.parseMessage("/help"));
     }
-    @Test
-    public void testCopy() {
-        assertEquals("Привет мир", bot.parseMessage("Привет мир"));
-    }
+
 }

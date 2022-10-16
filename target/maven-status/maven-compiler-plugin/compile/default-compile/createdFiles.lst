@@ -1,2 +1,4 @@
-org\example\Bot.class
+org\example\BotLogic.class
+org\example\TelegramBot.class
+org\example\ConsoleBot.class
 org\example\Main.class
