@@ -3,47 +3,21 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-<<<<<<< HEAD
-=======
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
-import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
->>>>>>> afd8b0081886054ef8c111f978ef016827e7fd23
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
 
-<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 
 import java.sql.SQLException;
-=======
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
->>>>>>> afd8b0081886054ef8c111f978ef016827e7fd23
-
 
 public class TelegramBot extends TelegramLongPollingBot {
-<<<<<<< HEAD
     BotLogic blogic = new BotLogic();
-    public String BotToken = "5519928315:AAG9QuA3vrMe_csK1PYedjCOioSKJsYeyFA";
+    public String BotToken = "TOKEN";
     public TelegramBot() {
     }
 
-=======
-    private String BotToken = System.getenv("BOT_TOKEN");
-    private String BotName = "Mbot";
-    public TelegramBot() {
-    }
-    String HELP_TEXT = "Это онлайн магазин в котором есть опции простотра товаров и подборки товаров под себя";
->>>>>>> afd8b0081886054ef8c111f978ef016827e7fd23
     @Override
     public String getBotUsername() {
         return "MBot";
@@ -59,7 +33,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
-<<<<<<< HEAD
             List<Object> Answer = blogic.parseMessage(messageText, chatId, "tele");
             if ((Integer) Answer.get(2) == 0) {
                 sendMessage((Long)Answer.get(1), (String)Answer.get(0));
@@ -90,35 +63,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
-=======
-
-            switch (messageText) {
-                case "/start":
-                    startCommandReceived(chatId);
-                    break;
-
-                case "Помощь":
-                    sendSomething(chatId, HELP_TEXT);
-                    break;
-
-                case "Список товаров":
-                    sendList(chatId);
-                    break;
-
-                case "Модели товаров":
-                    sendModels(chatId);
-                    break;
-                case "Смартфоны":
-                    sendModelsProduct(chatId, "Смартфоны");
-                    break;
-                case "Ноутбуки":
-                    sendModelsProduct(chatId, "Ноутбуки");
-                    break;
-
-                default:
-                    sendSomething(chatId, "Sorry, command was not recognized");
-
->>>>>>> afd8b0081886054ef8c111f978ef016827e7fd23
             }
         }
     }
@@ -134,16 +78,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         KeyboardRow row = new KeyboardRow();
         row.add("Список товаров");
         row.add("Модели товаров");
-<<<<<<< HEAD
         row.add("Подобрать товар");
 
         keyboardRows.add(row);
                 
-=======
-
-        keyboardRows.add(row);
-
->>>>>>> afd8b0081886054ef8c111f978ef016827e7fd23
         row = new KeyboardRow();
 
         row.add("Помощь");
@@ -160,7 +98,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
-<<<<<<< HEAD
 
     public void sendModelsProduct(long chatId, String arg) throws SQLException, ClassNotFoundException {
         Database.Conn();
@@ -280,33 +217,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(text);
-=======
-    public void sendModelsProduct(long chatId, String arg) {
-        Data d = new Data();
-        for (Object s: (ArrayList) d.products().get(arg)) {
-            sendMessage(chatId, (String) s);
-        }
-    }
-
-    private void startCommandReceived(long chatId) {
-        String answer = "Приветствую в нашем магазине. Выберите опцию";
-        sendMessage(chatId, answer);
-    }
-
-    private void sendList(long chatId){
-        String answer = "Сегодня у нас в наличии смартфоны и ноутбуки";
-        sendMessage(chatId, answer);
-    }
-
-    private void sendSomething(long chatId, String text){
-        sendMessage(chatId, text);
-    }
-
-    private void sendModels(long chatId){
-        SendMessage message = new SendMessage();
-        message.setChatId(String.valueOf(chatId));
-        message.setText("Какие модели вы хотите посмотреть?");
->>>>>>> afd8b0081886054ef8c111f978ef016827e7fd23
 
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboardRows = new ArrayList<>();

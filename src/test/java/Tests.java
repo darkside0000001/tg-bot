@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Tests {
-<<<<<<< HEAD
     TelegramBot tgBot = new TelegramBot();
 
     BotLogic blogic = new BotLogic();
@@ -44,20 +43,5 @@ public class Tests {
         String answ_tele = (String) blogic.parseMessage("Список товаров",0,"tele").get(0);
         Assertions.assertEquals( answ_tele,
                 blogic.parseMessage("/get",0,"cons").get(0));
-=======
-    BotLogic lBot = new BotLogic();
-    @Test
-    public void testSee() {
-        assertEquals("Модели какого товара хотите посмотреть?", lBot.parseMessage("/seeModels"));
     }
-    @Test
-    public void testStart() {
-        assertEquals("Приветствую в нашем магазине. Наберите /help для просмотра списка команд", lBot.parseMessage("/start"));
-    }
-    @Test
-    public void testHelp() {
-        assertEquals("/get - вывод списка товаров, /seeModels - вывод моделей товаров", lBot.parseMessage("/help"));
->>>>>>> afd8b0081886054ef8c111f978ef016827e7fd23
-    }
-
 }
