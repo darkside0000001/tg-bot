@@ -14,7 +14,7 @@ import java.sql.SQLException;
 
 public class TelegramBot extends TelegramLongPollingBot {
     BotLogic blogic = new BotLogic();
-    public String BotToken = "5519928315:AAG9QuA3vrMe_csK1PYedjCOioSKJsYeyFA";
+    public String BotToken = System.getenv("BOT_TOKEN");
     public TelegramBot() {
     }
 
