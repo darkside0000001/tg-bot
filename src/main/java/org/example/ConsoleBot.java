@@ -13,11 +13,18 @@ import java.sql.SQLException;
 
 public class ConsoleBot {
 
+<<<<<<< HEAD
     BotLogic blogic = new BotLogic();
     Scanner in = new Scanner(System.in);
 
     public ConsoleBot() throws SQLException, ClassNotFoundException {
         System.out.println("Приветствую в нашем магазине. Наберите '/help' для просмотра списка команд");
+=======
+    public ConsoleBot() {
+        bot = new BotLogic();
+        System.out.println("Приветствую в нашем магазине. Наберите /help для просмотра списка команд");
+        Scanner in = new Scanner(System.in);
+>>>>>>> afd8b0081886054ef8c111f978ef016827e7fd23
         while (true) {
             String line = in.nextLine();
             List<Object> Answer = blogic.parseMessage(line, 0, "cons");
