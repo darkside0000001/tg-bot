@@ -12,13 +12,15 @@ public class BotLogic {
             "HELP_TEXT_cons", "/get - вывод списка товаров, /seeModels - вывод моделей товаров, /pick - подобрать",
             "MODELS_TEXT_cons", "Какие товары хотите посмотреть? /smartphone и /notebooks");
 
-    // 0 - sendMessage
-    // 1 - categories
-    // 2 - products
-    // 3 - questionType
-    // 4 - ask_obj
-    // 5 - ask_price
-    // 6 - give_device
+    /*
+    *0 - sendMessage
+    *1 - categories
+    *2 - products
+    *3 - questionType
+    *4 - ask_obj
+    *5 - ask_price
+    *6 - give_device
+     */
     public List<Object> parseMessage(String textMsg, long chatId, String type_bot) {
         String txt;
 
