@@ -46,16 +46,4 @@ public class Tests {
 
         Assertions.assertTrue(answ.equals("У вас в корзине HP 15s-eq1332ur"));
     }
-
-    /*
-    Тест получения объектов из корзины. Должен вернуть ноутбук HP 15s-eq1332ur
-    */
-    @Test
-    public void test() throws SQLException, ClassNotFoundException {
-        Mockito.when(mock.giveCart(0)).thenReturn(Arrays.asList("У вас в корзине HP 15s-eq1332ur", 0, 0));
-
-        String answ = (String) mock.giveCart(0).get(0);
-
-        Assertions.assertTrue(answ.equals("У вас в корзине HP 15s-eq1332ur"));
-    }
 }
