@@ -1,7 +1,10 @@
 package org.example;
+import java.util.*;
 
 public class Globals {
-    public static String type;
-    public static String obj;
-    public static String price;
+    public String type;
+    public String obj;
+    public String priceFrom;
+	public String priceTo;
+    public ArrayList<String> cart;
 }
