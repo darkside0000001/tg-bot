@@ -1,49 +1,65 @@
 import org.example.BotLogic;
 import org.example.Database;
-import org.example.Globals;
-import org.example.TelegramBot;
-import org.example.Users;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class Tests {
     @Mock
-    BotLogic blogic = new BotLogic();
+    Database dbMock = mock(Database.class);
+    BotLogic blMock = new BotLogic(dbMock);
 
-    BotLogic mock = org.mockito.Mockito.mock(BotLogic.class);
+    Database db = new Database();
+    BotLogic bl = new BotLogic(db);
 
-    /*
-    Тест команд для подбора товаров. Должен вернуть ноутбук HP 15s-eq1332ur
-    */
+    /**
+     Тест на получения товаров из корзины
+     */
     @Test
-    public void testPick() throws SQLException, ClassNotFoundException {
-        Mockito.when(mock.giveDB(0, true)).thenReturn(Arrays.asList("HP 15s-eq1332ur", 0, 6));
+    public void giveCart() throws Exception {
+        when(dbMock.giveCart(0)).thenReturn(
+                Arrays.asList("У вас в корзине HP 15s-eq1332ur", 0, 6)
+        );
 
-        String answ = (String) mock.giveDB(0, true).get(0);
-
-        Assertions.assertTrue(answ.equals("HP 15s-eq1332ur"));
+        String answer = (String)blMock.parseMessage("Посмотреть корзину",0, "tele").get(0);
+        assertEquals("У вас в корзине HP 15s-eq1332ur", answer);
     }
 
-    /*
-    Тест получения объектов из корзины. Должен вернуть ноутбук HP 15s-eq1332ur
-    */
+    /**
+     Тест на фильтр товаров
+     */
     @Test
-    public void testGetCart() throws SQLException, ClassNotFoundException {
-        Mockito.when(mock.giveCart(0)).thenReturn(Arrays.asList("У вас в корзине HP 15s-eq1332ur", 0, 0));
+    public void priceForm() throws Exception {
+        when(dbMock.giveDB(0, true)).thenReturn(
+                Arrays.asList("Вам подойдет Asus Rog 5", 0, 6)
+        );
 
-        String answ = (String) mock.giveCart(0).get(0);
+        String answer = (String)blMock.priceForm("40000", "60000", 0).get(0);
+        assertEquals("Вам подойдет Asus Rog 5", answer);
+    }
 
-        Assertions.assertTrue(answ.equals("У вас в корзине HP 15s-eq1332ur"));
+    /**
+     Тест на добавление товаров в корзину
+     */
+    @Test
+    public void addCart() throws Exception {
+        db.addCart(-1, "HP 15s-eq1332ur");
+        String answer = (String)bl.parseMessage("Посмотреть корзину", -1, "tele").get(0);
+        assertEquals("У вас в корзине HP 15s-eq1332ur\n", answer);
+    }
+
+    /**
+     Тест на очистку корзины
+     */
+    @Test
+    public void cleanCart() throws Exception {
+        bl.parseMessage("Очистить корзину", -1, "tele");
+        String answer = (String)bl.parseMessage("Посмотреть корзину", -1, "tele").get(0);
+        assertEquals("Ваша корзина пуста ", answer);
     }
 }
