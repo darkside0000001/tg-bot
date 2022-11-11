@@ -1,9 +1,11 @@
 package org.example;
 
+import javax.xml.crypto.Data;
 import java.sql.SQLException;
 import java.util.*;
 
 public class BotLogic {
+    Database db;
     Map<String, String> text_map = Map.of("HELP_TEXT", "Это онлайн магазин в котором есть опции простотра товаров и подборки товаров под себя",
             "START_TEXT", "Приветствую в нашем магазине. Выберите опцию",
             "LIST_OF_PRODUCT_TEXT", "Сегодня у нас в наличии смартфоны и ноутбуки",
@@ -20,14 +22,21 @@ public class BotLogic {
     // 4 - ask_obj
     // 5 - ask_price
     // 6 - give_device
-    public void priceform(String start, String finish, long chatId, int i){
+
+    public BotLogic(Database db) {
+        this.db = db;
+    }
+
+    public List<Object> priceForm(String start, String finish, long chatId) throws SQLException, ClassNotFoundException {
         Globals global = Users.getUserGlobals(chatId);
         global.priceFrom = start;
         global.priceTo = finish;
-        //return listAppend("funny text", chatId, i);
+        return db.giveDB(chatId, true);
     }
 
-
+    /**
+     *Метод, который отвечает за обработку сообщений от пользователя
+     */
     public List<Object> parseMessage(String textMsg, long chatId, String type_bot) throws SQLException, ClassNotFoundException {
         String txt;
         Globals global = Users.getUserGlobals(chatId);
@@ -82,28 +91,25 @@ public class BotLogic {
                 global.obj = "study";
                 return listAppend("study", chatId, 5);
             case "меньше 20000":
-                priceform("0", "20000", chatId, 6);
-                return giveDB(chatId, true);
+                return priceForm("0", "20000", chatId);
             case "от 20000 до 40000":
-                priceform("20000","40000", chatId, 6);
-                return giveDB(chatId, true);
+                return priceForm("20000","40000", chatId);
             case "от 40000 до 60000":
-                priceform("40000","60000", chatId, 6);
-                return giveDB(chatId, true);
+                return priceForm("40000","60000", chatId);
             case "больше 60000":
-                priceform("60000","100000000", chatId, 6);
-                return giveDB(chatId, true);
+                priceForm("60000","100000000", chatId);
+                return db.giveDB(chatId, true);
             case "Корзина":
                 return listAppend("Корзина", chatId, 7);
             case "Добавить":
-                addToCart(chatId);
+                db.addToCart(chatId);
                 return listAppend("Товар успешно добавлен в корзину!", chatId, 0);
             case "Не добавлять":
                 return listAppend("Не добавлять", chatId, 0);
             case "Посмотреть корзину":
-                return giveCart(chatId);
+                return db.giveCart(chatId);
             case "Очистить корзину":
-                return deleteCart(chatId);
+                return db.cleanCart(chatId);
             case "Мои фильтры":
                 return listAppend("Мои фильтры", chatId, 12);
             default:
@@ -111,60 +117,12 @@ public class BotLogic {
         }
     }
 
+    /**
+     *Вспомогательный метод parseMessage
+     */
     public List<Object> listAppend(String text, Long chatId, Integer actionType) {
         List<Object> params = Arrays.asList(text, chatId, actionType);
 
         return params;
-    }
-
-    public List<Object> giveCart(long chatId) throws ClassNotFoundException, SQLException{
-        Database.Conn();
-        ArrayList<String> device = Database.getCart(chatId);
-        if(device.contains("пусто")){
-            return listAppend("Ваша корзина пуста ", chatId, 0);
-        }
-        else{
-            for (int i = 0; i < device.size(); i++) {
-                return listAppend("У вас в корзине " + device.get(i), chatId, 0);
-            }
-        }
-
-        return listAppend("Произошла какая-то ошибка", chatId, 0);
-    }
-
-    public List<Object> giveDB(long chatId, boolean addFilter) throws SQLException, ClassNotFoundException {
-        Database.Conn();
-        Globals global = Users.getUserGlobals(chatId);
-        ArrayList<String> device = Database.ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
-        if (addFilter) {
-            Database.addFilter(chatId, global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
-        }
-        ArrayList<String> aa = new ArrayList<String>();
-        if(device.contains("Нет таких товаров")){
-            aa.add("Нету");
-            return listAppend("Извините, в данное время нет таких товаров", chatId, 0);
-        }
-        else{
-            for (int i = 0; i < device.size(); i++) {
-                aa.add(device.get(i));
-                global.cart = aa;
-                return listAppend("Вам подойдет " + device.get(i), chatId, 6);
-            }
-        }
-
-        return listAppend("Произошла какая-то ошибка", chatId, 0);
-    }
-
-    void addToCart(long chatId) throws ClassNotFoundException, SQLException{
-        Database.Conn();
-        Globals global = Users.getUserGlobals(chatId);
-        ArrayList<String> products = global.cart;
-        Database.addCart(chatId, products.get(0));
-    }
-
-    public List<Object> deleteCart(long chatId) throws SQLException, ClassNotFoundException{
-        Database.Conn();
-        Database.deleteCart(chatId);
-        return listAppend("Корзина очищена", chatId, 0);
     }
 }

@@ -15,22 +15,32 @@ import java.util.List;
 import java.sql.SQLException;
 
 public class TelegramBot extends TelegramLongPollingBot {
-    BotLogic blogic = new BotLogic();
+    Database db = new Database();
+    BotLogic bl = new BotLogic(db);
     public String BotToken = System.getenv("BOT_TOKEN");
     public TelegramBot() {
     }
 
     @Override
+    /**
+     *Получение имени бота
+     */
     public String getBotUsername() {
-        return "rocket_chat_bot";
+        return "MBot";
     }
 
     @Override
+    /**
+     *Получение токена бота
+     */
     public String getBotToken() {
         return BotToken;
     }
 
     @Override
+    /**
+     *Метод, который реализует получение и отправку сообщений пользователю
+     */
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
@@ -40,7 +50,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             List<Object> Answer = null;
             try {
-                Answer = blogic.parseMessage(messageText, chatId, "tele");
+                Answer = bl.parseMessage(messageText, chatId, "tele");
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             } catch (ClassNotFoundException e) {
@@ -69,7 +79,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 askPrice(chatId);
             } else if ((Integer) Answer.get(2) == 6) {
                 try {
-                    sendMessage(chatId, (String) blogic.giveDB(chatId, true).get(0));
+                    sendMessage(chatId, (String) db.giveDB(chatId, true).get(0));
                     sendCart(chatId);
                     //giveDevice(chatId, true);
                 } catch (ClassNotFoundException e) {
@@ -82,7 +92,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if((Integer) Answer.get(2) == 8){
                 try {
                     //addToCart(chatId);
-                    blogic.addToCart(chatId);
+                    db.addToCart(chatId);
                 } catch (ClassNotFoundException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -96,7 +106,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             else if((Integer) Answer.get(2) == 10){
                 try {
                     //giveCart(chatId);
-                    blogic.giveCart(chatId);
+                    db.giveCart(chatId);
                 } catch (ClassNotFoundException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -106,7 +116,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
             } else if((Integer) Answer.get(2) == 11){
                 try {
-                    blogic.deleteCart(chatId);
+                    db.cleanCart(chatId);
                     //deleteCart(chatId);
                 } catch (ClassNotFoundException e) {
                     // TODO Auto-generated catch block
@@ -118,7 +128,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             }else if((Integer) Answer.get(2) == 12){
                 try {
                     ArrayList<ArrayList<String>> list = Database.showLatestFilters(chatId);
-                    
+
                     SendMessage message = new SendMessage();
                     message.setChatId(chatId);
                     if (Database.getRowCount(chatId) == 0) {
@@ -133,19 +143,19 @@ public class TelegramBot extends TelegramLongPollingBot {
                         String type = line.get(0);
                         String object = line.get(1);
                         String priceFrom = line.get(2);
-						String priceTo = line.get(3);
+                        String priceTo = line.get(3);
                         List<InlineKeyboardButton> rowInline = new ArrayList<>();
 
                         InlineKeyboardButton button = new InlineKeyboardButton();
                         button.setText(String.format("Тип = %s, Объект = %s, Цена = %s-%s\n", type, object, priceFrom, priceTo));
                         button.setCallbackData(String.format("fast_filtering|%s|%s|%s|%s", type, object, priceFrom, priceTo));
-                        
+
                         rowInline.add(button);
                         rowsInline.add(rowInline);
                     }
                     markupInline.setKeyboard(rowsInline);
                     message.setReplyMarkup(markupInline);
-                    
+
                     try {
                         execute(message); // Sending our message object to user
                     } catch (TelegramApiException e) {
@@ -167,7 +177,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 global.type = tokens[1];
                 global.obj = tokens[2];
                 global.priceFrom = tokens[3];
-				global.priceTo = tokens[4];
+                global.priceTo = tokens[4];
                 try {
                     giveDevice(chatId, false);
                 } catch (ClassNotFoundException e) {
@@ -179,6 +189,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     *Метод, который отправку сообщений пользователю
+     */
     public void sendMessage(long chatId, String textToSend) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
@@ -193,7 +206,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         row.add("Подобрать товар");
 
         keyboardRows.add(row);
-                
+
         row = new KeyboardRow();
 
         row.add("Помощь");
@@ -213,6 +226,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     *Метод, который реализует просмотр товаров
+     */
     public void sendModelsProduct(long chatId, String arg) throws SQLException, ClassNotFoundException {
         ArrayList<String> models = Database.getModels(arg);
         if (models.contains("Нет таких товаров")) {
@@ -224,6 +240,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     *Метод, который реализует подбор товаров
+     */
     private void sendQuestionType(long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
@@ -237,7 +256,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         row.add("ноутбуки");
 
         keyboardRows.add(row);
-                
+
         row = new KeyboardRow();
 
         keyboardMarkup.setKeyboard(keyboardRows);
@@ -251,6 +270,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     *Метод, который реализует подбор товаров
+     */
     private void askObj(long chatId){
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
@@ -263,12 +285,12 @@ public class TelegramBot extends TelegramLongPollingBot {
         row.add("Игры");
         row.add("Учеба");
         keyboardRows.add(row);
-                
+
         row = new KeyboardRow();
         row.add("Работа");
 
         keyboardRows.add(row);
-                
+
         row = new KeyboardRow();
 
         keyboardMarkup.setKeyboard(keyboardRows);
@@ -282,6 +304,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     *Метод, который реализует подбор товаров
+     */
     private void askPrice(long chatId){
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
@@ -294,13 +319,13 @@ public class TelegramBot extends TelegramLongPollingBot {
         row.add("меньше 20000");
         row.add("от 20000 до 40000");
         keyboardRows.add(row);
-                
+
         row = new KeyboardRow();
         row.add("от 40000 до 60000");
         row.add("больше 60000");
 
         keyboardRows.add(row);
-                
+
         row = new KeyboardRow();
 
         keyboardMarkup.setKeyboard(keyboardRows);
@@ -313,6 +338,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
+
+
     private void giveDevice(long chatId, boolean addFilter) throws ClassNotFoundException, SQLException{
         Globals global = Users.getUserGlobals(chatId);
         ArrayList<String> device = Database.ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
@@ -338,7 +365,10 @@ public class TelegramBot extends TelegramLongPollingBot {
             sendCart(chatId);
         }
     }
-    
+
+    /**
+     *Метод, который реализует добавление товара в корзину
+     */
     private void sendCart(long chatId){
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
@@ -346,7 +376,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboardRows = new ArrayList<>();
-        
+
         KeyboardRow row = new KeyboardRow();
         row.add("Добавить");
         row.add("Не добавлять");
@@ -362,6 +392,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     *Метод, который реализует просмотр товаров
+     */
     private void sendModels(long chatId, String text){
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
@@ -393,6 +426,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     *Метод, который реализует выбор опций корзины
+     */
     private void giveCartOptions(long chatId){
         SendMessage message = new SendMessage();
         String text = "Выберете опцию";
@@ -417,6 +453,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
-        }       
+        }
     }
 }
