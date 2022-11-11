@@ -2,6 +2,9 @@ package org.example;
 
 import java.util.HashMap;
 
+/**
+ *Класс привязки глобальных переменных к конкретному пользователю
+ */
 public class Users {
     private static HashMap<Long, Globals> data = new HashMap<Long, Globals>();
 
@@ -12,6 +15,9 @@ public class Users {
         return data.get(key);
     }
 
+    /**
+     *Метод, который прикрепляет к пользователю глобальные переменные
+     */
     public static void setUserGlobals(Long key, Globals value) {
         data.put(key, value);
     }
