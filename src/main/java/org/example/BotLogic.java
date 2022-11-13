@@ -4,6 +4,9 @@ import javax.xml.crypto.Data;
 import java.sql.SQLException;
 import java.util.*;
 
+/**
+ *Класс, реализующий логику бота
+ */
 public class BotLogic {
     Database db;
     Map<String, String> text_map = Map.of("HELP_TEXT", "Это онлайн магазин в котором есть опции простотра товаров и подборки товаров под себя",

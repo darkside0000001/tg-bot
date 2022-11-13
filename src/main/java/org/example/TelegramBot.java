@@ -14,6 +14,9 @@ import java.util.List;
 
 import java.sql.SQLException;
 
+/**
+ *Класс, реализующий бота в телеграме
+ */
 public class TelegramBot extends TelegramLongPollingBot {
     Database db = new Database();
     BotLogic bl = new BotLogic(db);
