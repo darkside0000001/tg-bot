@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Scanner;
 import java.sql.SQLException;
 
+/**
+ *Класс, реализующий бота в консоле
+ */
 public class ConsoleBot {
 
     Database db = new Database();
