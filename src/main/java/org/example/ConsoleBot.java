@@ -3,11 +3,12 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 import java.sql.SQLException;
 
 /**
- *Класс, реализующий бота в консоле
+ *Класс для реализации бота в телеграме
  */
 public class ConsoleBot {
 
@@ -15,7 +16,7 @@ public class ConsoleBot {
     BotLogic blogic = new BotLogic(db);
     Scanner in = new Scanner(System.in);
 
-    public ConsoleBot() throws SQLException, ClassNotFoundException {
+    public ConsoleBot() throws Exception {
         System.out.println("Приветствую в нашем магазине. Наберите '/help' для просмотра списка команд");
         while (true) {
             String line = in.nextLine();
@@ -33,7 +34,8 @@ public class ConsoleBot {
                 if(answer.equals("Посмотреть корзину")){
                     sendMessage((String)db.giveCart(0).get(0));
                 } else if(answer.equals("Очистить корзину")) {
-                    sendMessage((String)db.cleanCart(0).get(0));
+                    db.cleanCart(0);
+                    System.out.println("Корзина очищена");
                 }
             } else if ((Integer)Answer.get(2) == 12) {
                 sendFilters();
@@ -42,14 +44,14 @@ public class ConsoleBot {
     }
 
     /**
-     *Метод, который отправку сообщений пользователю
+     *Метод, который реализует отправку сообщений пользователю
      */
     public void sendMessage(String textToSend) {
         System.out.println(textToSend);
     }
 
     /**
-     *Метод, который реализует вывод фильтров
+     *Метод, который реализует вывод предыдущих фильтров
      */
     public void sendFilters() throws SQLException, ClassNotFoundException{
         Database.Conn();
@@ -59,7 +61,7 @@ public class ConsoleBot {
     /**
      *Метод, который реализует подбор товаров
      */
-    private String sendQuestionType() throws SQLException, ClassNotFoundException {
+    private String sendQuestionType() throws Exception {
         Database.Conn();
         Globals global = Users.getUserGlobals((long) 0);
         System.out.println("Что вы хотите посмотреть? (smartphone, notebook)");
@@ -82,9 +84,9 @@ public class ConsoleBot {
             global.priceFrom = "60000";
             global.priceTo = "600000";
         }
-        List<Object> answ = db.giveDB(0, true);
-        if ((Integer) answ.get(2) == 6) {
-            sendMessage(answ.get(0) + "\n Добавить товар в корзину? Да / Нет");
+        String product = blogic.parseDB(0, true);
+        if (!Objects.equals(product, "Извините, в данное время нет таких товаров")) {
+            sendMessage(product + "\n Добавить товар в корзину? Да / Нет");
             String line = in.nextLine();
             if (line.equals("Да")) {
                 db.addToCart(0);
@@ -98,7 +100,7 @@ public class ConsoleBot {
     }
 
     /**
-     *Метод, который реализует просмотр моделей
+     *Метод, который реализует просмотр актуальных моделей товаров
      */
     public void sendModelsProduct(String arg) throws SQLException, ClassNotFoundException {
         Database.Conn();

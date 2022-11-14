@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- *Класс, реализующий логику бота
+ *Класс для реализации логики бота
  */
 public class BotLogic {
     Database db;
@@ -30,17 +30,61 @@ public class BotLogic {
         this.db = db;
     }
 
-    public List<Object> priceForm(String start, String finish, long chatId) throws SQLException, ClassNotFoundException {
+    /**
+     *Метод для выбора ценавого диапозона
+     */
+    public List<Object> priceForm(String start, String finish, long chatId) throws Exception {
         Globals global = Users.getUserGlobals(chatId);
         global.priceFrom = start;
         global.priceTo = finish;
-        return db.giveDB(chatId, true);
+
+        String answer = parseDB(chatId, true);
+
+        return listAppend(answer, chatId, 6);
+    }
+
+    /**
+     *Метод для формирования ответа при подборе товара
+     */
+    public String parseDB(long chatId, boolean addFilter) throws Exception {
+        List<Object> products;
+        products = db.giveDB(chatId, addFilter);
+
+        StringBuilder answer = new StringBuilder();
+
+        if (products.size() == 0) {
+            return "Извините, в данное время нет таких товаров";
+        } else {
+            for (Object product : products) {
+                answer.append("Вам подойдет ").append(product).append("\n");
+            }
+            return answer.toString();
+        }
+    }
+
+    /**
+     *Метод для формирования ответа при просмотре корзины
+     */
+    public String parseCart(long chatId) throws Exception {
+        List<Object> products;
+        products = db.giveCart(chatId);
+
+        StringBuilder answer = new StringBuilder();
+
+        if (products.size() == 0) {
+            return "Ваша корзина пуста";
+        } else {
+            for (Object product : products) {
+                answer.append("У вас в корзине ").append(product).append("\n");
+            }
+            return answer.toString();
+        }
     }
 
     /**
      *Метод, который отвечает за обработку сообщений от пользователя
      */
-    public List<Object> parseMessage(String textMsg, long chatId, String type_bot) throws SQLException, ClassNotFoundException {
+    public List<Object> parseMessage(String textMsg, long chatId, String type_bot) throws Exception {
         String txt;
         Globals global = Users.getUserGlobals(chatId);
 
@@ -110,9 +154,10 @@ public class BotLogic {
             case "Не добавлять":
                 return listAppend("Не добавлять", chatId, 0);
             case "Посмотреть корзину":
-                return db.giveCart(chatId);
+                return listAppend(parseCart(chatId), chatId, 0);
             case "Очистить корзину":
-                return db.cleanCart(chatId);
+                db.cleanCart(chatId);
+                return listAppend("Корзина очищена", chatId, 0);
             case "Мои фильтры":
                 return listAppend("Мои фильтры", chatId, 12);
             default:
@@ -121,7 +166,7 @@ public class BotLogic {
     }
 
     /**
-     *Вспомогательный метод parseMessage
+     *Метод для формирования сообщения
      */
     public List<Object> listAppend(String text, Long chatId, Integer actionType) {
         List<Object> params = Arrays.asList(text, chatId, actionType);
