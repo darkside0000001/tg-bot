@@ -13,9 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import java.sql.SQLException;
+import java.util.Objects;
 
 /**
- *Класс, реализующий бота в телеграме
+ *Класс для реализации бота в телеграме
  */
 public class TelegramBot extends TelegramLongPollingBot {
     Database db = new Database();
@@ -54,9 +55,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             List<Object> Answer = null;
             try {
                 Answer = bl.parseMessage(messageText, chatId, "tele");
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            } catch (ClassNotFoundException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 
@@ -82,12 +81,12 @@ public class TelegramBot extends TelegramLongPollingBot {
                 askPrice(chatId);
             } else if ((Integer) Answer.get(2) == 6) {
                 try {
-                    sendMessage(chatId, (String) db.giveDB(chatId, true).get(0));
-                    sendCart(chatId);
-                    //giveDevice(chatId, true);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                } catch (SQLException e) {
+                    String answer = bl.parseDB(chatId, true);
+                    sendMessage(chatId, answer);
+                    if (!Objects.equals(answer, "Извините, в данное время нет таких товаров")) {
+                        sendCart(chatId);
+                    }
+                } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             } else if((Integer) Answer.get(2) == 7){
@@ -230,7 +229,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *Метод, который реализует просмотр товаров
+     *Метод, который реализует просмотр актуальных моделей товаров
      */
     public void sendModelsProduct(long chatId, String arg) throws SQLException, ClassNotFoundException {
         ArrayList<String> models = Database.getModels(arg);
@@ -274,7 +273,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *Метод, который реализует подбор товаров
+     *Метод выбора категории товара
      */
     private void askObj(long chatId){
         SendMessage message = new SendMessage();
@@ -308,7 +307,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *Метод, который реализует подбор товаров
+     *Метод диапазона выбора цены
      */
     private void askPrice(long chatId){
         SendMessage message = new SendMessage();
@@ -342,7 +341,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
-
+    /**
+     *Вывод моделей товара по фильтру
+     */
     private void giveDevice(long chatId, boolean addFilter) throws ClassNotFoundException, SQLException{
         Globals global = Users.getUserGlobals(chatId);
         ArrayList<String> device = Database.ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
