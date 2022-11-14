@@ -32,7 +32,7 @@ public class Database {
     }
 
     /**
-     *Чтение из базы данных
+     *Метод, который реализует чтение из базы данных
      */
     public static ArrayList<String> ReadDB(String type, String obj, Integer from, Integer to) throws ClassNotFoundException, SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM products WHERE type = ? and object = ? and price >= ? and price <= ?;");
@@ -56,7 +56,7 @@ public class Database {
     }
 
     /**
-     *Просмотр моделей
+     *Метод, который реализует просмотр моделей
      */
     public static ArrayList<String> getModels(String type) throws ClassNotFoundException, SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM products WHERE type = ?;");
@@ -77,7 +77,7 @@ public class Database {
     }
 
     /**
-     *Просмотр корзины
+     *Метод, который реализует просмотр корзины
      */
     public static ArrayList<String> getCart(long id) throws ClassNotFoundException, SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM cart WHERE id = ?;");
@@ -98,7 +98,7 @@ public class Database {
     }
 
     /**
-     *Добавление товара в корзину
+     *Метод, который реализует добавление товара в корзину
      */
     public static void addCart(long chatId, String product) throws SQLException, ClassNotFoundException {
         Database.Conn();
@@ -122,7 +122,7 @@ public class Database {
     }
 
     /**
-     *Удаление корзины
+     *Метод, который реализует удаление корзины
      */
     public static void deleteCart(long chatId) throws SQLException{
         PreparedStatement st = conn.prepareStatement("DELETE FROM cart WHERE id = ?;");
@@ -131,7 +131,7 @@ public class Database {
     }
 
     /**
-     *Добавление фильтра
+     *Метод, который реализует добавление фильтра
      */
     public static void addFilter(long chatId, String type, String obj, Integer from, Integer to) throws SQLException{
         final Integer limit = 5;
@@ -164,7 +164,7 @@ public class Database {
     }
 
     /**
-     *Удаление фильтра
+     *Метод, который реализует удаление фильтра
      */
     private static void deleteLRU(long chatId, Integer count) throws SQLException{
         PreparedStatement st = conn.prepareStatement("DELETE FROM `filters` WHERE `id` IN (SELECT `id` FROM `filters` WHERE `user_id` = ? ORDER BY `id` ASC LIMIT ?)");
@@ -174,7 +174,7 @@ public class Database {
     }
 
     /**
-     *Последние фильтров
+     *Метод, который реализует просмотр последних фильтров
      */
     public static ArrayList<ArrayList<String>> showLatestFilters(long chatId) throws SQLException{
         PreparedStatement st = conn.prepareStatement("SELECT `type`, `object`, `price_from`, `price_to` FROM `filters` WHERE `user_id` = ? ORDER BY `id` DESC");
@@ -193,16 +193,15 @@ public class Database {
     }
 
     /**
-     *Очистка корзины
+     *Метод, который реализует очистку корзины
      */
-    public static List<Object> cleanCart(long chatId) throws SQLException, ClassNotFoundException {
+    public static void cleanCart(long chatId) throws SQLException, ClassNotFoundException {
         Database.Conn();
         Database.deleteCart(chatId);
-        return listAppend("Корзина очищена", chatId, 0);
     }
 
     /**
-     *Добавление товара в корзину определенному пользователю
+     *Метод, который реализует добавление товара в корзину по id пользователя
      */
     void addToCart(long chatId) throws ClassNotFoundException, SQLException{
         Database.Conn();
@@ -212,53 +211,43 @@ public class Database {
     }
 
     /**
-     *Просмотр корзины
+     *Метод, который реализует просмотр корзины
      */
     public List<Object> giveCart(long chatId) throws ClassNotFoundException, SQLException{
         Database.Conn();
+        List<Object> answer = new ArrayList<>();
         ArrayList<String> device = Database.getCart(chatId);
-        if(device.contains("пусто")){
-            return listAppend("Ваша корзина пуста ", chatId, 0);
+        if (!device.contains("пусто")) {
+            answer.addAll(device);
         }
-        else{
-            StringBuilder answer = new StringBuilder();
-            for (int i = 0; i < device.size(); i++) {
-                answer.append("У вас в корзине ").append(device.get(i)).append("\n");
-            }
-            return listAppend(answer.toString(), chatId, 0);
-        }
+        return answer;
     }
 
     /**
-     *Взяите товара из базы данных
+     *Вывод моделей товара по фильтру
      */
     public List<Object> giveDB(long chatId, boolean addFilter) throws SQLException, ClassNotFoundException {
         Database.Conn();
+        List<Object> answer = new ArrayList<Object>();
         Globals global = Users.getUserGlobals(chatId);
         ArrayList<String> device = Database.ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
+
         if (addFilter) {
             Database.addFilter(chatId, global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
         }
+
         ArrayList<String> aa = new ArrayList<String>();
-        if(device.contains("Нет таких товаров")){
+
+        if (device.contains("Нет таких товаров")) {
             aa.add("Нету");
-            return listAppend("Извините, в данное время нет таких товаров", chatId, 0);
-        }
-        else{
-            StringBuilder answer = new StringBuilder();
+        } else {
             for (int i = 0; i < device.size(); i++) {
                 aa.add(device.get(i));
                 global.cart = aa;
-                answer.append("Вам подойдет ").append(device.get(i)).append("\n");
+                answer.add(device.get(i));
             }
-            return listAppend(answer.toString(), chatId, 6);
         }
-    }
-
-    public static List<Object> listAppend(String text, Long chatId, Integer actionType) {
-        List<Object> params = Arrays.asList(text, chatId, actionType);
-
-        return params;
+        return answer;
     }
 }
 
