@@ -21,7 +21,11 @@ public class Main {
                 e.printStackTrace();
             }
         } else if (modeSelection.equals("Console") || modeSelection.equals("2")) {
-            ConsoleBot bot = new ConsoleBot();
+            try {
+                ConsoleBot bot = new ConsoleBot();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
