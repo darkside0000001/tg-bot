@@ -39,6 +39,14 @@ public class ConsoleBot {
                 }
             } else if ((Integer)Answer.get(2) == 12) {
                 sendFilters();
+            } else if ((Integer)Answer.get(2) == 13) {
+                System.out.println("Выберите опцию - Посмотреть скидки, Подключить уведомления о скидках");
+                String answer = in.nextLine();
+                if (answer.equals("Посмотреть скидки")) {
+                    sendDiscounts(0);
+                } else if (answer.equals("Подключить уведомления о скидках")) {
+                    System.out.println("Команды не существует");
+                }
             }
         }
     }
@@ -113,7 +121,26 @@ public class ConsoleBot {
             }
         }
     }
+
+    /**
+     *Метод, который отправляет товары со скидками
+     */
+    private void sendDiscounts(long chatId) throws ClassNotFoundException, SQLException{
+        ArrayList<String> products;
+        products = Database.giveDiscounts();
+        if (products.contains("нету ничего")) {
+            sendMessage( "Извините, в данное время нет скидок");
+        } else {
+            for (int i = 0; i < products.size() - 1; i += 2) {
+                sendMessage( "Сегодня продается " + products.get(i) + " с " + products.get(i+1) + "% скидкой!");
+            }
+        }
+    }
 }
+
+
+
+
 
 
 

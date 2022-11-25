@@ -6,60 +6,73 @@ import org.mockito.Mock;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class Tests {
     @Mock
     Database dbMock = mock(Database.class);
-    BotLogic bl = new BotLogic(dbMock);
+    BotLogic botLogic = new BotLogic(dbMock);
 
     /**
-     Тест на получения товаров из корзины
+     *Тест на получения товаров из корзины
      */
     @Test
-    public void giveCart() throws Exception {
+    public void giveCartTest() throws Exception {
         when(dbMock.giveCart(-1)).thenReturn(
                 Arrays.asList("HP 15s-eq1332ur")
         );
 
-        String answer = (String)bl.parseMessage("Посмотреть корзину",-1, "tele").get(0);
+        String answer = (String)botLogic.parseMessage("Посмотреть корзину",-1, "tele").get(0);
         assertEquals("У вас в корзине HP 15s-eq1332ur\n", answer);
     }
 
     /**
-     Тест на фильтр товаров
+     *Тест на фильтр товаров
      */
     @Test
-    public void priceForm() throws Exception {
+    public void priceFormTest() throws Exception {
         when(dbMock.giveDB(0, true)).thenReturn(
                 Arrays.asList("Asus Rog 5")
         );
 
-        String answer = (String)bl.priceForm("40000", "60000", 0).get(0);
+        String answer = (String)botLogic.priceForm("40000", "60000", 0).get(0);
         assertEquals("Вам подойдет Asus Rog 5\n", answer);
     }
 
     /**
-     Тест на добавление товаров в корзину
+     *Тест на добавление товаров в корзину
      */
     @Test
-    public void addCart() throws Exception {
+    public void addCartTest() throws Exception {
         when(dbMock.giveCart(-1)).thenReturn(
                 Arrays.asList("HP 15s-eq1332ur", "Asus Rog 5")
         );
-        String answer = bl.parseCart(-1);
+        String answer = botLogic.parseCart(-1);
         assertEquals("У вас в корзине HP 15s-eq1332ur\nУ вас в корзине Asus Rog 5\n", answer);
     }
 
     /**
-     Тест на очистку корзины
+     *Тест на очистку корзины
      */
     @Test
-    public void cleanCart() throws Exception {
+    public void cleanCartTest() throws Exception {
         dbMock.addCart(-1, "HP 15s-eq1332ur");
         dbMock.cleanCart(-1);
-        String answer = bl.parseCart(-1);
-        assertEquals("Ваша корзина пуста", answer);
+        //verify(dbMock, times(1)).cleanCart(-1);
+
+        //String answer = bl.parseCart(-1);
+        //assertEquals("Ваша корзина пуста", answer);
+    }
+
+    /**
+     * Тест просмотра скидок
+     */
+    @Test
+    public void sendDiscountsTest() throws Exception {
+        dbMock.addDiscount("HP 15s-eq1332ur", 50);
+        dbMock.addDiscount("Asus Rog 5", 50);
+        String answer = (String) botLogic.parseMessage("Посмотреть скидки", -1, "tele").get(0);
+        assertEquals("Сегодня продается HP 15s-eq1332ur с 50% скидкой!" +
+                "\nСегодня продается Asus Rog 5 с 50% скидкой!\n", answer);
     }
 }

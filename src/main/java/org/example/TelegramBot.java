@@ -104,7 +104,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
             } else if((Integer) Answer.get(2) == 9){
                 sendMessage(chatId, "Окей");
-            }
+            } 
             else if((Integer) Answer.get(2) == 10){
                 try {
                     //giveCart(chatId);
@@ -116,7 +116,21 @@ public class TelegramBot extends TelegramLongPollingBot {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-            } else if((Integer) Answer.get(2) == 11){
+            } else if((Integer) Answer.get(2) == 13){
+                sendDiscountsOptions(chatId);
+            }
+            else if((Integer) Answer.get(2) == 14){
+                try {
+                    sendDiscounts(chatId);
+                } catch (ClassNotFoundException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            else if((Integer) Answer.get(2) == 11){
                 try {
                     db.cleanCart(chatId);
                     //deleteCart(chatId);
@@ -215,6 +229,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         row.add("Корзина");
         row.add("Мои фильтры");
 
+        keyboardRows.add(row);
+        row = new KeyboardRow();
+        
+        row.add("Скидки");
         keyboardRows.add(row);
 
         keyboardMarkup.setKeyboard(keyboardRows);
@@ -457,6 +475,53 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     *Метод, который реализует опции скидок
+     */
+    private void sendDiscountsOptions(long chatId){
+        SendMessage message = new SendMessage();
+        String text = "Выберете опцию";
+        message.setChatId(String.valueOf(chatId));
+        message.setText(text);
+
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow row = new KeyboardRow();
+        row.add("Посмотреть скидки");
+
+        keyboardRows.add(row);
+
+        row = new KeyboardRow();
+        row.add("Включить уведомления о скидках");
+        keyboardRows.add(row);
+
+        keyboardMarkup.setKeyboard(keyboardRows);
+
+        message.setReplyMarkup(keyboardMarkup);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     *Метод, который отправляет товары со скидками
+     */
+    private void sendDiscounts(long chatId) throws ClassNotFoundException, SQLException{
+        ArrayList<String> products;
+        products = Database.giveDiscounts();
+        if (products.contains("нету ничего")) {
+            sendMessage(chatId, "Извините, в данное время нет скидок");
+        } else {
+            for (int i = 0; i < products.size() - 1; i += 2) {
+                sendMessage(chatId, "Сегодня продается " + products.get(i) + " с " + products.get(i+1) + "% скидкой!");
+            }
         }
     }
 }

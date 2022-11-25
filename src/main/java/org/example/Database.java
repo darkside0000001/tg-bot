@@ -248,6 +248,89 @@ public class Database {
             }
         }
         return answer;
+    } 
+
+    /**
+     *Вывод товаров со скидками
+     */
+    public static ArrayList<String> giveDiscounts() throws ClassNotFoundException, SQLException{
+        Database.Conn();
+        PreparedStatement prepared = conn.prepareStatement("SELECT name, discount_size FROM products WHERE on_sale = 1;");
+        ResultSet resSet = prepared.executeQuery();
+        short iter = 0;
+        ArrayList<String> products = new ArrayList<String>();
+        while(resSet.next()){
+            String name = resSet.getString("name");
+            Integer discount = resSet.getInt("discount_size");
+            products.add(name);
+            products.add(discount.toString());
+            iter += 1;
+        }
+        if(iter == 0){
+            products.add("нету ничего");
+            return products;
+        }
+        return products;
+    }
+
+    /**
+     *Изменение цены на товар с учетом скидки
+     */
+    public static void addDiscount(String name, double discount) throws ClassNotFoundException, SQLException{
+        Database.Conn();
+        PreparedStatement prepared = conn.prepareStatement("SELECT price, object, type FROM products WHERE name = ?;");
+        prepared.setString(1, name);
+        ResultSet res = prepared.executeQuery();
+        Integer price = 0;
+        String obj = "aa";
+        String type = "aa";
+        while(res.next()){
+            price = res.getInt("price");
+            obj = res.getString("object");
+            type = res.getString("type");
+        }
+        double a = discount/100;
+        PreparedStatement st = conn.prepareStatement("DELETE FROM products WHERE name = ?;");
+        st.setString(1, name);
+        st.executeUpdate();
+        PreparedStatement prep = conn.prepareStatement("INSERT INTO 'products' ('on_sale', 'discount_size','price', 'name', 'object', 'type', 'old_price') VALUES (?, ?, ?, ?, ?, ?, ?);");
+        prep.setInt(1, 1);
+        prep.setDouble(2, discount);
+        prep.setDouble(3, price - price*(discount/100));
+        prep.setString(4, name);
+        prep.setString(5, obj);
+        prep.setString(6, type);
+        prep.setDouble(7, price);
+        prep.executeUpdate();
+    }
+
+    /**
+     *Удаление скидки и возвращение предыдущей цены
+     */
+    public static void deleteDiscount(String name) throws SQLException, ClassNotFoundException{
+        Database.Conn();
+        PreparedStatement prepared = conn.prepareStatement("SELECT old_price, object, type FROM products WHERE name = ?;");
+        prepared.setString(1, name);
+        ResultSet res = prepared.executeQuery();
+        Integer price = 0;
+        String obj = "aa";
+        String type = "aa";
+        while(res.next()){
+            price = res.getInt("old_price");
+            obj = res.getString("object");
+            type = res.getString("type");
+        }
+        PreparedStatement st = conn.prepareStatement("DELETE FROM products WHERE name = ?;");
+        st.setString(1, name);
+        st.executeUpdate();
+        PreparedStatement prep = conn.prepareStatement("INSERT INTO 'products' ('on_sale', 'discount_size','price', 'name', 'object', 'type') VALUES (?, ?, ?, ?, ?, ?);");
+        prep.setInt(1, 0);
+        prep.setDouble(2, 0);
+        prep.setDouble(3, price);
+        prep.setString(4, name);
+        prep.setString(5, obj);
+        prep.setString(6, type);
+        prep.executeUpdate();
     }
 }
 

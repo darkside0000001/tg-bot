@@ -82,6 +82,23 @@ public class BotLogic {
     }
 
     /**
+     *Метод для формирования ответы при просмотре товаров со скидками
+     */
+    private String parseDiscounts(long chatId) throws ClassNotFoundException, SQLException{
+        ArrayList<String> products;
+        products = Database.giveDiscounts();
+        StringBuilder answer = new StringBuilder();
+        if (products.contains("нету ничего")) {
+            answer.append("Извините, в данное время нет скидок");
+        } else {
+            for (int i = 0; i < products.size() - 1; i += 2) {
+                answer.append("Сегодня продается " + products.get(i) + " с " + products.get(i+1) + "% скидкой!").append("\n");
+            }
+        }
+        return answer.toString();
+    }
+
+    /**
      *Метод, который отвечает за обработку сообщений от пользователя
      */
     public List<Object> parseMessage(String textMsg, long chatId, String type_bot) throws Exception {
@@ -160,6 +177,10 @@ public class BotLogic {
                 return listAppend("Корзина очищена", chatId, 0);
             case "Мои фильтры":
                 return listAppend("Мои фильтры", chatId, 12);
+            case "Скидки":
+                return listAppend("Скидки", chatId, 13);
+            case "Посмотреть скидки":
+                return listAppend(parseDiscounts(chatId), chatId, 14);
             default:
                 return listAppend(text_map.get("ERROR_TEXT"), chatId, 0);
         }
