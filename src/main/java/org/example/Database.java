@@ -1,4 +1,5 @@
 package org.example;
+import java.sql.Timestamp;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -14,13 +15,13 @@ import java.util.List;
  */
 public class Database {
     private final String name = null;
-    public static Connection conn;
-    public static Statement statmt;
+    private Connection conn;
+    private Statement statmt;
 
     /**
      *Метод для подключения базы данных
      */
-    public static void Conn() throws ClassNotFoundException, SQLException{
+    public void ConnectToDB() {
         try{
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection("jdbc:sqlite:sq1.db");
@@ -31,10 +32,14 @@ public class Database {
         }
     }
 
+    public Database(){
+        ConnectToDB();
+    }
+
     /**
      *Метод, который реализует чтение из базы данных
      */
-    public static ArrayList<String> ReadDB(String type, String obj, Integer from, Integer to) throws ClassNotFoundException, SQLException{
+    public ArrayList<String> ReadDB(String type, String obj, Integer from, Integer to) throws ClassNotFoundException, SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM products WHERE type = ? and object = ? and price >= ? and price <= ?;");
         prepared.setString(1, type);
         prepared.setString(2, obj);
@@ -58,7 +63,7 @@ public class Database {
     /**
      *Метод, который реализует просмотр моделей
      */
-    public static ArrayList<String> getModels(String type) throws ClassNotFoundException, SQLException{
+    public ArrayList<String> getModels(String type) throws ClassNotFoundException, SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM products WHERE type = ?;");
         prepared.setString(1, type);
         ResultSet resSet = prepared.executeQuery();
@@ -79,7 +84,7 @@ public class Database {
     /**
      *Метод, который реализует просмотр корзины
      */
-    public static ArrayList<String> getCart(long id) throws ClassNotFoundException, SQLException{
+    public ArrayList<String> getCart(long id) throws ClassNotFoundException, SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM cart WHERE id = ?;");
         prepared.setLong(1, id);
         ResultSet resSet = prepared.executeQuery();
@@ -100,8 +105,7 @@ public class Database {
     /**
      *Метод, который реализует добавление товара в корзину
      */
-    public static void addCart(long chatId, String product) throws SQLException, ClassNotFoundException {
-        Database.Conn();
+    public void addCart(long chatId, String product) throws SQLException, ClassNotFoundException {
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM cart WHERE id = ? and products = ?;");
         prepared.setLong(1, chatId);
         prepared.setString(2, product);
@@ -124,7 +128,7 @@ public class Database {
     /**
      *Метод, который реализует удаление корзины
      */
-    public static void deleteCart(long chatId) throws SQLException{
+    public void cleanCart(long chatId) throws SQLException{
         PreparedStatement st = conn.prepareStatement("DELETE FROM cart WHERE id = ?;");
         st.setLong(1, chatId);
         st.executeUpdate();
@@ -133,7 +137,7 @@ public class Database {
     /**
      *Метод, который реализует добавление фильтра
      */
-    public static void addFilter(long chatId, String type, String obj, Integer from, Integer to) throws SQLException{
+    public void addFilter(long chatId, String type, String obj, Integer from, Integer to) throws SQLException{
         final Integer limit = 5;
         Integer rows = getRowCount(chatId);
         if (rows >= limit) {
@@ -152,7 +156,7 @@ public class Database {
     /**
      *Количество фильтров
      */
-    public static Integer getRowCount(long chatId) throws SQLException {
+    public Integer getRowCount(long chatId) throws SQLException {
         PreparedStatement st = conn.prepareStatement("SELECT COUNT(*) as count FROM `filters` WHERE `user_id` = ?");
         st.setLong(1, chatId);
         ResultSet res = st.executeQuery();
@@ -166,7 +170,7 @@ public class Database {
     /**
      *Метод, который реализует удаление фильтра
      */
-    private static void deleteLRU(long chatId, Integer count) throws SQLException{
+    private void deleteLRU(long chatId, Integer count) throws SQLException{
         PreparedStatement st = conn.prepareStatement("DELETE FROM `filters` WHERE `id` IN (SELECT `id` FROM `filters` WHERE `user_id` = ? ORDER BY `id` ASC LIMIT ?)");
         st.setLong(1, chatId);
         st.setInt(2, count);
@@ -176,7 +180,7 @@ public class Database {
     /**
      *Метод, который реализует просмотр последних фильтров
      */
-    public static ArrayList<ArrayList<String>> showLatestFilters(long chatId) throws SQLException{
+    public ArrayList<ArrayList<String>> showLatestFilters(long chatId) throws SQLException{
         PreparedStatement st = conn.prepareStatement("SELECT `type`, `object`, `price_from`, `price_to` FROM `filters` WHERE `user_id` = ? ORDER BY `id` DESC");
         st.setLong(1, chatId);
         ResultSet res = st.executeQuery();
@@ -195,28 +199,25 @@ public class Database {
     /**
      *Метод, который реализует очистку корзины
      */
-    public static void cleanCart(long chatId) throws SQLException, ClassNotFoundException {
-        Database.Conn();
-        Database.deleteCart(chatId);
-    }
+    // public void cleanCart(long chatId) throws SQLException, ClassNotFoundException {
+    //     Database.deleteCart(chatId);
+    // }
 
     /**
      *Метод, который реализует добавление товара в корзину по id пользователя
      */
-    void addToCart(long chatId) throws ClassNotFoundException, SQLException{
-        Database.Conn();
+    public void addToCart(long chatId) throws ClassNotFoundException, SQLException{
         Globals global = Users.getUserGlobals(chatId);
         ArrayList<String> products = global.cart;
-        Database.addCart(chatId, products.get(0));
+        addCart(chatId, products.get(0));
     }
 
     /**
      *Метод, который реализует просмотр корзины
      */
     public List<Object> giveCart(long chatId) throws ClassNotFoundException, SQLException{
-        Database.Conn();
         List<Object> answer = new ArrayList<>();
-        ArrayList<String> device = Database.getCart(chatId);
+        ArrayList<String> device = getCart(chatId);
         if (!device.contains("пусто")) {
             answer.addAll(device);
         }
@@ -227,13 +228,12 @@ public class Database {
      *Вывод моделей товара по фильтру
      */
     public List<Object> giveDB(long chatId, boolean addFilter) throws SQLException, ClassNotFoundException {
-        Database.Conn();
         List<Object> answer = new ArrayList<Object>();
         Globals global = Users.getUserGlobals(chatId);
-        ArrayList<String> device = Database.ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
+        ArrayList<String> device = ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
 
         if (addFilter) {
-            Database.addFilter(chatId, global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
+            addFilter(chatId, global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
         }
 
         ArrayList<String> aa = new ArrayList<String>();
@@ -253,8 +253,7 @@ public class Database {
     /**
      *Вывод товаров со скидками
      */
-    public static ArrayList<String> giveDiscounts() throws ClassNotFoundException, SQLException{
-        Database.Conn();
+    public ArrayList<String> giveDiscounts() throws ClassNotFoundException, SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT name, discount_size FROM products WHERE on_sale = 1;");
         ResultSet resSet = prepared.executeQuery();
         short iter = 0;
@@ -276,8 +275,7 @@ public class Database {
     /**
      *Изменение цены на товар с учетом скидки
      */
-    public static void addDiscount(String name, double discount) throws ClassNotFoundException, SQLException{
-        Database.Conn();
+    public void addDiscount(String name, double discount) throws ClassNotFoundException, SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT price, object, type FROM products WHERE name = ?;");
         prepared.setString(1, name);
         ResultSet res = prepared.executeQuery();
@@ -307,8 +305,7 @@ public class Database {
     /**
      *Удаление скидки и возвращение предыдущей цены
      */
-    public static void deleteDiscount(String name) throws SQLException, ClassNotFoundException{
-        Database.Conn();
+    public void deleteDiscount(String name) throws SQLException, ClassNotFoundException{
         PreparedStatement prepared = conn.prepareStatement("SELECT old_price, object, type FROM products WHERE name = ?;");
         prepared.setString(1, name);
         ResultSet res = prepared.executeQuery();
@@ -331,6 +328,73 @@ public class Database {
         prep.setString(5, obj);
         prep.setString(6, type);
         prep.executeUpdate();
+    }
+
+    /**
+     *Добавление частоты уведомлений
+     */
+    public void addInterval(Long user_id, Integer interval) throws SQLException, ClassNotFoundException{
+        PreparedStatement prepared = conn.prepareStatement("INSERT INTO 'subscriptions' ('user_id', 'interval') VALUES (?, ?);");
+        prepared.setLong(1, user_id);
+        prepared.setInt(2, interval);
+        prepared.executeUpdate();
+    }
+
+    /**
+     *проверка, пришло ли время отпарвки уведомления
+     */
+    private Boolean readyToSend(Long user_id, Integer interval) throws SQLException, ClassNotFoundException {
+        PreparedStatement st = conn.prepareStatement("SELECT `timestamp` FROM `last_send` WHERE user_id = ?;");
+        st.setLong(1, user_id);
+        ResultSet res = st.executeQuery();
+        Long old_timestamp = (long) 0;
+        while(res.next()) {
+            old_timestamp = res.getLong("timestamp");
+        }
+        Long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+        return old_timestamp + interval * 1000 < timestamp;
+    }
+
+    /**
+     *обновление таймера
+     */
+    private void updateTimestamp(Long user_id) throws SQLException, ClassNotFoundException {
+        Long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+        PreparedStatement upd = conn.prepareStatement("REPLACE INTO `last_send`(`user_id`, `timestamp`) VALUES(?, ?);");
+        upd.setLong(1, user_id);
+        upd.setLong(2, timestamp);
+        upd.executeUpdate();
+    }
+
+    /**
+     *получение всех таймеров
+     */
+    public ArrayList<Long> getAllIntervals() throws SQLException, ClassNotFoundException {
+        PreparedStatement st = conn.prepareStatement("SELECT `user_id`, `interval` FROM `subscriptions`");
+        ResultSet res = st.executeQuery();
+        ArrayList<Long> users = new ArrayList<Long>();
+        
+        while(res.next()) {
+            Long user_id = res.getLong("user_id");
+            Integer interval = res.getInt("interval");
+            if (readyToSend(user_id, interval)) {
+                users.add(user_id);
+                updateTimestamp(user_id);
+            }
+        }
+        return users;
+    }
+
+    /**
+     *отписка от уведомлений
+     */
+    public void deleteSubs(Long user_id) throws SQLException{
+        PreparedStatement st = conn.prepareStatement("DELETE FROM subscriptions WHERE user_id = ?;");
+        st.setLong(1, user_id);
+        st.executeUpdate();
+        PreparedStatement pr = conn.prepareStatement("DELETE FROM last_send WHERE user_id = ?;");
+        pr.setLong(1, user_id);
+        pr.executeUpdate();
     }
 }
 

@@ -11,8 +11,10 @@ public class Main {
     public static void main(String args[]) throws ClassNotFoundException, SQLException {
         Scanner in = new Scanner(System.in);
         Database db = new Database();
-        //db.addDiscount("Asus Rog 5", 50);
-        db.deleteDiscount("Asus Rog 5");
+        db.ConnectToDB();
+        // Database db = new Database();
+        // db.addDiscount("Asus Rog 5", 50);
+        // db.deleteDiscount("Asus Rog 5");
         System.out.println("Введите Telegram для запуска бота в телеграме или Console для запуска бота в консоли");
         String modeSelection = in.nextLine();
         if (modeSelection.equals("Telegram") || modeSelection.equals("1")) {
