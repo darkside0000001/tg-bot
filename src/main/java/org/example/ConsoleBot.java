@@ -6,19 +6,30 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 import java.sql.SQLException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  *Класс для реализации бота в телеграме
  */
 public class ConsoleBot {
-
     Database db = new Database();
     BotLogic blogic = new BotLogic(db);
     Scanner in = new Scanner(System.in);
 
+
     public ConsoleBot() throws Exception {
         System.out.println("Приветствую в нашем магазине. Наберите '/help' для просмотра списка команд");
         while (true) {
+            ExecutorService executor = Executors.newFixedThreadPool(10);
+            executor.submit(() -> {
+                try {
+                    new EventLoopConsole();
+                } catch (ClassNotFoundException | SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            });
             String line = in.nextLine();
             List<Object> Answer = blogic.parseMessage(line, 0, "cons");
             if ((Integer)Answer.get(2) == 0 || (Integer)Answer.get(2) == 1) {
@@ -39,6 +50,26 @@ public class ConsoleBot {
                 }
             } else if ((Integer)Answer.get(2) == 12) {
                 sendFilters();
+            } else if ((Integer)Answer.get(2) == 13) {
+                System.out.println("Выберите опцию - Посмотреть скидки, Подключить уведомления о скидках");
+                String answer = in.nextLine();
+                if (answer.equals("Посмотреть скидки")) {
+                    sendDiscounts(0);
+                } else if (answer.equals("Подключить уведомления о скидках")) {
+                    System.out.println("Выберете частоту уведомлений - 30 секунд, 1 чаc, 1 день, Отписаться");
+                } else if (answer.equals("30 секунд")) {
+                    System.out.println("Включены уведомления на 30 секунд");
+                    db.addInterval(Long.valueOf(0), 30);
+                } else if (answer.equals("1 час")) {
+                    System.out.println("Включены уведомления на 1 час");
+                    db.addInterval(Long.valueOf(0), 3600);
+                } else if (answer.equals("1 день")) {
+                    db.addInterval(Long.valueOf(0), 86400);
+                    System.out.println("Включены уведомления на 1 день");
+                } else if (answer.equals("Отписаться")) {
+                    db.deleteSubs(0L);
+                    System.out.println("Уведомления отключены");
+                }
             }
         }
     }
@@ -54,15 +85,13 @@ public class ConsoleBot {
      *Метод, который реализует вывод предыдущих фильтров
      */
     public void sendFilters() throws SQLException, ClassNotFoundException{
-        Database.Conn();
-        System.out.println(Database.showLatestFilters(0));
+        System.out.println(db.showLatestFilters(0));
     }
 
     /**
      *Метод, который реализует подбор товаров
      */
     private String sendQuestionType() throws Exception {
-        Database.Conn();
         Globals global = Users.getUserGlobals((long) 0);
         System.out.println("Что вы хотите посмотреть? (smartphone, notebook)");
         global.type = in.nextLine();
@@ -103,8 +132,7 @@ public class ConsoleBot {
      *Метод, который реализует просмотр актуальных моделей товаров
      */
     public void sendModelsProduct(String arg) throws SQLException, ClassNotFoundException {
-        Database.Conn();
-        ArrayList<String> models = Database.getModels(arg);
+        ArrayList<String> models = db.getModels(arg);
         if (models.contains("Нет таких товаров")) {
             System.out.println("Извините, в данное время нет таких товаров");
         } else {
@@ -113,7 +141,26 @@ public class ConsoleBot {
             }
         }
     }
+
+    /**
+     *Метод, который отправляет товары со скидками
+     */
+    private void sendDiscounts(long chatId) throws ClassNotFoundException, SQLException{
+        ArrayList<String> products;
+        products = db.giveDiscounts();
+        if (products.contains("нету ничего")) {
+            sendMessage( "Извините, в данное время нет скидок");
+        } else {
+            for (int i = 0; i < products.size() - 1; i += 2) {
+                sendMessage( "Сегодня продается " + products.get(i) + " с " + products.get(i+1) + "% скидкой!");
+            }
+        }
+    }
 }
+
+
+
+
 
 
 
