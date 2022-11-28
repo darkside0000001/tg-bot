@@ -28,6 +28,8 @@ public class ConsoleBot {
                 } catch (ClassNotFoundException | SQLException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             });
             String line = in.nextLine();
@@ -54,9 +56,10 @@ public class ConsoleBot {
                 System.out.println("Выберите опцию - Посмотреть скидки, Подключить уведомления о скидках");
                 String answer = in.nextLine();
                 if (answer.equals("Посмотреть скидки")) {
-                    sendDiscounts(0);
+                    //sendDiscounts(0);
+                    sendMessage((String) blogic.parseMessage("Посмотреть скидки", 0, "cons").get(0));
                 } else if (answer.equals("Подключить уведомления о скидках")) {
-                    System.out.println("Выберете частоту уведомлений - 30 секунд, 1 чаc, 1 день, Отписаться");
+                    System.out.println("Выберите частоту уведомлений - 30 секунд, 1 чаc, 1 день, Отписаться");
                 } else if (answer.equals("30 секунд")) {
                     System.out.println("Включены уведомления на 30 секунд");
                     db.addInterval(Long.valueOf(0), 30);

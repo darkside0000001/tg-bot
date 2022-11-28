@@ -11,15 +11,15 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Scanner;
 
 /**
-     *отправка уведомлений консоль
-     */
-
+ *Класс, реализующий отправку сообщений в консоли
+ */
 public class EventLoopConsole  {
     Database db = new Database();
     BotLogic bl = new BotLogic(db);
-    public EventLoopConsole() throws ClassNotFoundException, SQLException {
+    public EventLoopConsole() throws Exception {
         while (true) {
             ArrayList<Long> users = db.getAllIntervals();
             for (Long user : users) {
@@ -36,16 +36,7 @@ public class EventLoopConsole  {
     /**
      *Метод, который отправляет товары со скидками
      */
-    private void sendDiscounts(long chatId) throws ClassNotFoundException, SQLException{
-        ArrayList<String> products;
-        products = db.giveDiscounts();
-        if (products.contains("нету ничего")) {
-
-            System.out.println("Извините, в данное время нет скидок");
-        } else {
-            for (int i = 0; i < products.size() - 1; i += 2) {
-                System.out.println("Сегодня продается " + products.get(i) + " с " + products.get(i+1) + "% скидкой!");
-            }
-        }
-    }
+    private void sendDiscounts(long chatId) throws Exception {
+        System.out.println(bl.parseMessage("Посмотреть скидки", 0, "cons").get(0));
 }
+    }
