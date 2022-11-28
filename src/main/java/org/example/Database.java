@@ -197,13 +197,6 @@ public class Database {
     }
 
     /**
-     *Метод, который реализует очистку корзины
-     */
-    // public void cleanCart(long chatId) throws SQLException, ClassNotFoundException {
-    //     Database.deleteCart(chatId);
-    // }
-
-    /**
      *Метод, который реализует добавление товара в корзину по id пользователя
      */
     public void addToCart(long chatId) throws ClassNotFoundException, SQLException{
