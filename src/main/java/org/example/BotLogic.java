@@ -1,6 +1,5 @@
 package org.example;
 
-import javax.xml.crypto.Data;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -8,14 +7,14 @@ import java.util.*;
  *Класс для реализации логики бота
  */
 public class BotLogic {
-    Database db;
+    Database db = new Database();
     Map<String, String> text_map = Map.of("HELP_TEXT", "Это онлайн магазин в котором есть опции простотра товаров и подборки товаров под себя",
             "START_TEXT", "Приветствую в нашем магазине. Выберите опцию",
             "LIST_OF_PRODUCT_TEXT", "Сегодня у нас в наличии смартфоны и ноутбуки",
             "MODELS_TEXT", "Модели каких товаров хотите посмотреть?",
             "ERROR_TEXT", "Извините, команда не существует",
             "START_TEXT_cons", "Приветствую в нашем магазине. Наберите /help для просмотра списка команд",
-            "HELP_TEXT_cons", "/get - вывод списка товаров, /seeModels - вывод моделей товаров, /pick - подобрать",
+            "HELP_TEXT_cons", "/get - вывод списка товаров, /seeModels - вывод моделей товаров, /pick - подобрать, Мои фильтры - просмотр фильтров, Корзина - меню корзины, Скидки - меню скидок",
             "MODELS_TEXT_cons", "Какие товары хотите посмотреть? /smartphone и /notebooks");
 
     // 0 - sendMessage
@@ -29,7 +28,6 @@ public class BotLogic {
     public BotLogic(Database db) {
         this.db = db;
     }
-
     /**
      *Метод для выбора ценавого диапозона
      */
@@ -86,7 +84,7 @@ public class BotLogic {
      */
     private String parseDiscounts(long chatId) throws ClassNotFoundException, SQLException{
         ArrayList<String> products;
-        products = Database.giveDiscounts();
+        products = db.giveDiscounts();
         StringBuilder answer = new StringBuilder();
         if (products.contains("нету ничего")) {
             answer.append("Извините, в данное время нет скидок");
@@ -181,6 +179,20 @@ public class BotLogic {
                 return listAppend("Скидки", chatId, 13);
             case "Посмотреть скидки":
                 return listAppend(parseDiscounts(chatId), chatId, 14);
+            case "Включить уведомления о скидках":
+                return listAppend("Включить уведомления о скидках", chatId, 15);
+            case "30 секунд":
+                db.addInterval(chatId, 30);
+                return listAppend("Включены уведомления на 30 секунд", chatId, 0);
+            case "1 час":
+                db.addInterval(chatId, 3600);
+                return listAppend("Включены уведомления на 1 час", chatId, 0);
+            case "1 день":
+                db.addInterval(chatId, 86400);
+                return listAppend("Включены уведомления на 1 день", chatId, 0);
+            case "Отписаться":
+                db.deleteSubs(chatId);
+                return listAppend("Уведомления выключены", chatId, 0);
             default:
                 return listAppend(text_map.get("ERROR_TEXT"), chatId, 0);
         }
