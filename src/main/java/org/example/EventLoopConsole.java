@@ -13,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
 
+/**
+ *Класс, реализующий отправку сообщений в консоли
+ */
 public class EventLoopConsole  {
     Database db = new Database();
     BotLogic bl = new BotLogic(db);

@@ -6,6 +6,9 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 
+/**
+ *Класс, реализующий отправку сообщений в телеграме
+ */
 public class EventLoopTelegram extends TelegramLongPollingBot {
     Database db = new Database();
     BotLogic bl = new BotLogic(db);
