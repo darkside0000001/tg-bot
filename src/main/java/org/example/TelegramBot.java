@@ -1,5 +1,4 @@
 package org.example;
-import org.glassfish.jersey.message.internal.HttpHeaderReader.Event;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -17,8 +16,6 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.xml.crypto.Data;
-
 /**
  *Класс для реализации бота в телеграме
  */
@@ -30,10 +27,12 @@ public class TelegramBot extends TelegramLongPollingBot {
         ExecutorService executor = Executors.newFixedThreadPool(10);
         executor.submit(() -> {
             try {
-                new EventLoop();
+                new EventLoopTelegram();
             } catch (ClassNotFoundException | SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         });
     }
@@ -135,14 +134,11 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sendSubscriptionType(chatId);
             }
             else if((Integer) Answer.get(2) == 14){
+                //sendDiscounts(chatId);
                 try {
-                    sendDiscounts(chatId);
-                } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (SQLException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    sendMessage(chatId,(String) bl.parseMessage("Посмотреть скидки", chatId, "cons").get(0));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
             }
             else if((Integer) Answer.get(2) == 11){
@@ -218,7 +214,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     /**
-     *Метод, который отправку сообщений пользователю
+     *Метод, который реализует отправку сообщений пользователю
      */
     public void sendMessage(long chatId, String textToSend) {
         SendMessage message = new SendMessage();
@@ -519,21 +515,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             execute(message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
-        }
-    }
-
-    /**
-     *Метод, который отправляет товары со скидками
-     */
-    private void sendDiscounts(long chatId) throws ClassNotFoundException, SQLException{
-        ArrayList<String> products;
-        products = db.giveDiscounts();
-        if (products.contains("нету ничего")) {
-            sendMessage(chatId, "Извините, в данное время нет скидок");
-        } else {
-            for (int i = 0; i < products.size() - 1; i += 2) {
-                sendMessage(chatId, "Сегодня продается " + products.get(i) + " с " + products.get(i+1) + "% скидкой!");
-            }
         }
     }
 

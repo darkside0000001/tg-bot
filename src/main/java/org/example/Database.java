@@ -251,7 +251,7 @@ public class Database {
     } 
 
     /**
-     *Вывод товаров со скидками
+     *Просмотр товаров со скидками
      */
     public ArrayList<String> giveDiscounts() throws ClassNotFoundException, SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT name, discount_size FROM products WHERE on_sale = 1;");
@@ -341,7 +341,7 @@ public class Database {
     }
 
     /**
-     *проверка, пришло ли время отпарвки уведомления
+     *Проверка, пришло ли время отправки сообщения
      */
     private Boolean readyToSend(Long user_id, Integer interval) throws SQLException, ClassNotFoundException {
         PreparedStatement st = conn.prepareStatement("SELECT `timestamp` FROM `last_send` WHERE user_id = ?;");
@@ -356,7 +356,7 @@ public class Database {
     }
 
     /**
-     *обновление таймера
+     *Обновление таймера
      */
     private void updateTimestamp(Long user_id) throws SQLException, ClassNotFoundException {
         Long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
@@ -367,7 +367,7 @@ public class Database {
     }
 
     /**
-     *получение всех таймеров
+     *Получение всех таймеров
      */
     public ArrayList<Long> getAllIntervals() throws SQLException, ClassNotFoundException {
         PreparedStatement st = conn.prepareStatement("SELECT `user_id`, `interval` FROM `subscriptions`");
@@ -386,7 +386,7 @@ public class Database {
     }
 
     /**
-     *отписка от уведомлений
+     *Метод, который реализует отключение уведомлений о скидках
      */
     public void deleteSubs(Long user_id) throws SQLException{
         PreparedStatement st = conn.prepareStatement("DELETE FROM subscriptions WHERE user_id = ?;");
