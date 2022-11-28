@@ -61,20 +61,15 @@ public class Tests {
      */
     @Test
     public void cleanCartTest() throws Exception {
-            dbMock.addCart(-1, "HP 15s-eq1332ur");
             dbMock.cleanCart(-1);
-            //verify(dbMock, times(1)).cleanCart(-1);
-
-            //String answer = bl.parseCart(-1);
-            //assertEquals("Ваша корзина пуста", answer);
+            verify(dbMock).cleanCart(-1);
     }
 
     /**
-     * Тест просмотра скидок
+     * Тест на просмотр скидок
      */
     @Test
     public void sendDiscountsTest() throws Exception {
-
             when(dbMock.giveDiscounts()).thenReturn(
                 new ArrayList<String>(Arrays.asList("HP 15s-eq1332ur", "40"))
             );
