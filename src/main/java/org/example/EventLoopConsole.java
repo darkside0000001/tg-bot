@@ -23,7 +23,9 @@ public class EventLoopConsole  {
         while (true) {
             ArrayList<Long> users = db.getAllIntervals();
             for (Long user : users) {
+                if (user == (long) 0) {
                 sendDiscounts(user);
+                }
             }
             try {
                 Thread.sleep(5000);
