@@ -37,26 +37,28 @@ public class TelegramBot extends TelegramLongPollingBot {
         });
     }
 
-    @Override
+
     /**
      *Получение имени бота
      */
+    @Override
     public String getBotUsername() {
         return "MBot";
     }
 
-    @Override
     /**
      *Получение токена бота
      */
+    @Override
     public String getBotToken() {
         return BotToken;
     }
 
-    @Override
+
     /**
      *Метод, который реализует получение и отправку сообщений пользователю
      */
+    @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
@@ -78,9 +80,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if ((Integer) Answer.get(2) == 2) {
                 try {
                     sendModelsProduct(chatId, (String)Answer.get(0));
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                } catch (ClassNotFoundException e) {
+                } catch (SQLException | ClassNotFoundException e) {
                     throw new RuntimeException(e);
                 }
             } else if ((Integer) Answer.get(2) == 3) {
@@ -106,11 +106,8 @@ public class TelegramBot extends TelegramLongPollingBot {
             } else if((Integer) Answer.get(2) == 8){
                 try {
                     //addToCart(chatId);
-                    db.addToCart(chatId);
-                } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (SQLException e) {
+                    bl.addToCart(chatId);
+                } catch (ClassNotFoundException | SQLException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
@@ -121,10 +118,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 try {
                     //giveCart(chatId);
                     db.giveCart(chatId);
-                } catch (ClassNotFoundException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (SQLException e) {
+                } catch (ClassNotFoundException | SQLException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
@@ -151,7 +145,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 }
             }else if((Integer) Answer.get(2) == 12){
                 try {
-                    ArrayList<ArrayList<String>> list = db.showLatestFilters(chatId);
+                    List<ArrayList<String>> list = db.showLatestFilters(chatId);
 
                     SendMessage message = new SendMessage();
                     message.setChatId(chatId);
@@ -163,7 +157,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                     InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
                     List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
-                    for (ArrayList<String> line : list) {
+                    for (List<String> line : list) {
                         String type = line.get(0);
                         String object = line.get(1);
                         String priceFrom = line.get(2);
@@ -204,9 +198,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 global.priceTo = tokens[4];
                 try {
                     giveDevice(chatId, false);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                } catch (SQLException e) {
+                } catch (ClassNotFoundException | SQLException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -258,12 +250,12 @@ public class TelegramBot extends TelegramLongPollingBot {
      *Метод, который реализует просмотр актуальных моделей товаров
      */
     public void sendModelsProduct(long chatId, String arg) throws SQLException, ClassNotFoundException {
-        ArrayList<String> models = db.getModels(arg);
+        List<String> models = db.getModels(arg);
         if (models.contains("Нет таких товаров")) {
             sendMessage(chatId, "Извините, в данное время нет таких товаров");
         } else {
-            for (int i = 0; i < models.size(); i++) {
-                sendMessage(chatId, models.get(i));
+            for (String model : models) {
+                sendMessage(chatId, model);
             }
         }
     }
@@ -372,23 +364,23 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
     private void giveDevice(long chatId, boolean addFilter) throws ClassNotFoundException, SQLException{
         Globals global = Users.getUserGlobals(chatId);
-        ArrayList<String> device = db.ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
+        List<String> device = db.ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
         if (addFilter) {
             db.addFilter(chatId, global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
         }
-        ArrayList<String> aa = new ArrayList<String>();
+        ArrayList<String> aa = new ArrayList<>();
         if(device.contains("Нет таких товаров")){
             sendMessage(chatId, "Извините, в данное время нет таких товаров");
             aa.add("Нету");
         }
         else{
-            for (int i = 0; i < device.size(); i++) {
-                sendMessage(chatId, "Вам подойдет " + device.get(i));
-                aa.add(device.get(i));
+            for (String s : device) {
+                sendMessage(chatId, "Вам подойдет " + s);
+                aa.add(s);
             }
         }
         if(aa.contains("Нету")){
-            ;
+
         }
         else{
             global.cart = aa;

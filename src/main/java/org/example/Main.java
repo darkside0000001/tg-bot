@@ -4,11 +4,10 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String args[]) throws ClassNotFoundException, SQLException {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException {
         Scanner in = new Scanner(System.in);
         Database db = new Database();
         db.ConnectToDB();
