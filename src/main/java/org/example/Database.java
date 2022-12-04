@@ -337,9 +337,9 @@ public class Database {
     }
 
     /**
-     *Получение всех таймеров
+     *Получение всех id пользователей
      */
-    public List<Long> getAllIntervals() throws SQLException {
+    public List<Long> getAllIUsers() throws SQLException {
         PreparedStatement st = conn.prepareStatement("SELECT `user_id`, `interval` FROM `subscriptions`");
         ResultSet res = st.executeQuery();
         List<Long> users = new ArrayList<>();

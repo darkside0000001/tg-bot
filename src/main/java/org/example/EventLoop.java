@@ -8,18 +8,26 @@ import java.util.List;
 import static java.lang.Thread.*;
 
 /**
- *Класс, реализующий отправку сообщений в телеграме
+ *Класс, реализующий отправку сообщений
  */
-public class EventLoopTelegram extends TelegramLongPollingBot {
+public class EventLoop extends TelegramLongPollingBot {
     Database db = new Database();
     BotLogic bl = new BotLogic(db);
     public String BotToken = System.getenv("BOT_TOKEN");
-    public EventLoopTelegram() throws Exception {
+
+    /**
+     *Реализация отправки сообщений о скидках пользователю
+     */
+    public EventLoop(String type) throws Exception {
         while (true) {
-            List<Long> users = db.getAllIntervals();
+            List<Long> users = db.getAllIUsers();
             for (Long user : users) {
-                if (user != (long) 0) {
-                    sendDiscounts(user);
+                if (user != 0L && type.equals("tele")) {
+                    sendMessage(user, (String) bl.parseMessage("Посмотреть скидки", 0, "tele").get(0));
+                    //sendDiscounts(user);
+                }
+                else if (user == 0L && type.equals("cons")) {
+                    System.out.println(bl.parseMessage("Посмотреть скидки", 0, "cons").get(0));
                 }
             }
             try {
@@ -29,7 +37,6 @@ public class EventLoopTelegram extends TelegramLongPollingBot {
             }
         }
     }
-
 
     /**
      *Получение имени бота
@@ -54,11 +61,11 @@ public class EventLoopTelegram extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         // TODO Auto-generated method stub
-        
+
     }
 
     /**
-     *Метод, который реализует отправку сообщений пользователю
+     *Метод, который реализует отправку сообщений пользователю в телеграме
      */
     private void sendMessage(Long chatId, String textToSend) {
         SendMessage message = new SendMessage();
@@ -71,11 +78,6 @@ public class EventLoopTelegram extends TelegramLongPollingBot {
         }
     }
 
-    /**
-     *Метод, который отправляет товары со скидками
-     */
-    private void sendDiscounts(long chatId) throws Exception {
-        sendMessage(chatId, (String) bl.parseMessage("Посмотреть скидки", 0, "tele").get(0));
-    }
 }
+
 

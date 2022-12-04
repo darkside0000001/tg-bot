@@ -21,7 +21,7 @@ public class ConsoleBot {
             ExecutorService executor = Executors.newFixedThreadPool(10);
             executor.submit(() -> {
                 try {
-                    new EventLoopConsole();
+                    new EventLoop("cons");
                 } catch (ClassNotFoundException | SQLException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -29,6 +29,7 @@ public class ConsoleBot {
                     throw new RuntimeException(e);
                 }
             });
+
             String line = in.nextLine();
             List<Object> Answer = blogic.parseMessage(line, 0, "cons");
             if ((Integer)Answer.get(2) == 0 || (Integer)Answer.get(2) == 1) {

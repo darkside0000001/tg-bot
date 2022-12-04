@@ -27,7 +27,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         ExecutorService executor = Executors.newFixedThreadPool(10);
         executor.submit(() -> {
             try {
-                new EventLoopTelegram();
+                new EventLoop("tele");
             } catch (ClassNotFoundException | SQLException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
