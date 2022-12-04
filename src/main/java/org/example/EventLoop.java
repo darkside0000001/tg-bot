@@ -3,59 +3,69 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import java.util.List;
 
-import java.util.ArrayList;
+import static java.lang.Thread.*;
 
 /**
- *Класс, реализующий отправку сообщений в телеграме
+ *Класс, реализующий отправку сообщений
  */
-public class EventLoopTelegram extends TelegramLongPollingBot {
+public class EventLoop extends TelegramLongPollingBot {
     Database db = new Database();
     BotLogic bl = new BotLogic(db);
     public String BotToken = System.getenv("BOT_TOKEN");
-    public EventLoopTelegram() throws Exception {
+
+    /**
+     *Реализация отправки сообщений о скидках пользователю
+     */
+    public EventLoop(String type) throws Exception {
         while (true) {
-            ArrayList<Long> users = db.getAllIntervals();
+            List<Long> users = db.getAllIUsers();
             for (Long user : users) {
-                if (user != (long) 0) {
-                    sendDiscounts(user);
+                if (user != 0L && type.equals("tele")) {
+                    sendMessage(user, (String) bl.parseMessage("Посмотреть скидки", 0, "tele").get(0));
+                    //sendDiscounts(user);
+                }
+                else if (user == 0L && type.equals("cons")) {
+                    System.out.println(bl.parseMessage("Посмотреть скидки", 0, "cons").get(0));
                 }
             }
             try {
-                Thread.sleep(5000);
+                sleep(5000);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
         }
     }
 
-    @Override
     /**
      *Получение имени бота
      */
+    @Override
     public String getBotUsername() {
         return "MBot";
     }
 
-    @Override
+
     /**
      *Получение токена бота
      */
+    @Override
     public String getBotToken() {
         return BotToken;
     }
 
-    @Override
     /**
      *Метод, который реализует получение и отправку сообщений пользователю
      */
+    @Override
     public void onUpdateReceived(Update update) {
         // TODO Auto-generated method stub
-        
+
     }
 
     /**
-     *Метод, который реализует отправку сообщений пользователю
+     *Метод, который реализует отправку сообщений пользователю в телеграме
      */
     private void sendMessage(Long chatId, String textToSend) {
         SendMessage message = new SendMessage();
@@ -68,11 +78,6 @@ public class EventLoopTelegram extends TelegramLongPollingBot {
         }
     }
 
-    /**
-     *Метод, который отправляет товары со скидками
-     */
-    private void sendDiscounts(long chatId) throws Exception {
-        sendMessage(chatId, (String) bl.parseMessage("Посмотреть скидки", 0, "tele").get(0));
-    }
 }
+
 
