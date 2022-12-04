@@ -12,7 +12,6 @@ public class Tests {
     @Mock
     Database dbMock = mock(Database.class);
     BotLogic botLogic = new BotLogic(dbMock);
-    
 
     /**
      *Тест на получения товаров из корзины
@@ -27,7 +26,6 @@ public class Tests {
             assertEquals("У вас в корзине HP 15s-eq1332ur\n", answer);
         }
 
-
     /**
      *Тест на подбор товара
      */
@@ -39,19 +37,6 @@ public class Tests {
             String answer = botLogic.parseDB( -1, true);
             assertEquals("Вам подойдет Asus Rog 5\n", answer);
         }
-
-    /**
-     *Тест на подбор товара c ценой
-     */
-    @Test
-    public void priceFormTest() throws Exception {
-        when(dbMock.giveDB(-1, true)).thenReturn(
-                List.of("HP 15s-eq1332ur")
-        );
-        String answer = (String)botLogic.priceForm("40000", "60000", -1).get(0);
-        assertEquals("Вам подойдет HP 15s-eq1332ur\n", answer);
-
-    }
 
     /**
      *Тест на добавление товаров в корзину

@@ -36,7 +36,7 @@ public class BotLogic {
         global.priceFrom = start;
         global.priceTo = finish;
 
-        String answer = parseDB(chatId, true);
+        String answer = parseDB(chatId, false);
 
         return listAppend(answer, chatId, 6);
     }
@@ -78,18 +78,6 @@ public class BotLogic {
             return answer.toString();
         }
     }
-
-//    /**
-//     *Метод, который реализует просмотр корзины
-//     */
-//    public List<Object> giveCart(long chatId) throws ClassNotFoundException, SQLException{
-//        List<Object> answer = new ArrayList<>();
-//        List<String> device = db.getCart(chatId);
-//        if (!device.contains("пусто")) {
-//            answer.addAll(device);
-//        }
-//        return answer;
-//    }
 
     /**
      *Метод, который реализует добавление товара в корзину по id пользователя
