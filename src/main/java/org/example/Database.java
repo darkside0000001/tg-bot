@@ -7,16 +7,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
  *Класс, реализующий работу базы данных
  */
 public class Database {
-    private final String name = null;
     private Connection conn;
-    private Statement statmt;
+    private Statement statement;
 
     /**
      *Метод для подключения базы данных
@@ -25,7 +23,7 @@ public class Database {
         try{
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection("jdbc:sqlite:sq1.db");
-            statmt = conn.createStatement();
+            statement = conn.createStatement();
         }
         catch(Exception e){
             System.out.println(e.getMessage());
@@ -39,7 +37,7 @@ public class Database {
     /**
      *Метод, который реализует чтение из базы данных
      */
-    public ArrayList<String> ReadDB(String type, String obj, Integer from, Integer to) throws ClassNotFoundException, SQLException{
+    public List<String> ReadDB(String type, String obj, Integer from, Integer to) throws SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM products WHERE type = ? and object = ? and price >= ? and price <= ?;");
         prepared.setString(1, type);
         prepared.setString(2, obj);
@@ -47,7 +45,7 @@ public class Database {
         prepared.setInt(4, to);
         ResultSet resSet = prepared.executeQuery();
         short iter = 0;
-        ArrayList<String> products = new ArrayList<String>();
+        ArrayList<String> products = new ArrayList<>();
         while(resSet.next()){
             String name = resSet.getString("name");
             products.add(name);
@@ -63,12 +61,12 @@ public class Database {
     /**
      *Метод, который реализует просмотр моделей
      */
-    public ArrayList<String> getModels(String type) throws ClassNotFoundException, SQLException{
+    public List<String> getModels(String type) throws SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM products WHERE type = ?;");
         prepared.setString(1, type);
         ResultSet resSet = prepared.executeQuery();
         short iter = 0;
-        ArrayList<String> products = new ArrayList<String>();
+        List<String> products = new ArrayList<>();
         while(resSet.next()){
             String name = resSet.getString("name");
             products.add(name);
@@ -84,12 +82,12 @@ public class Database {
     /**
      *Метод, который реализует просмотр корзины
      */
-    public ArrayList<String> getCart(long id) throws ClassNotFoundException, SQLException{
+    public List<String> giveCart(long id) throws ClassNotFoundException, SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM cart WHERE id = ?;");
         prepared.setLong(1, id);
         ResultSet resSet = prepared.executeQuery();
         short iter = 0;
-        ArrayList<String> cart = new ArrayList<String>();
+        List<String> cart = new ArrayList<>();
         while(resSet.next()){
             String name = resSet.getString("products");
             cart.add(name);
@@ -105,13 +103,13 @@ public class Database {
     /**
      *Метод, который реализует добавление товара в корзину
      */
-    public void addCart(long chatId, String product) throws SQLException, ClassNotFoundException {
+    public void addCart(long chatId, String product) throws SQLException {
         PreparedStatement prepared = conn.prepareStatement("SELECT * FROM cart WHERE id = ? and products = ?;");
         prepared.setLong(1, chatId);
         prepared.setString(2, product);
         ResultSet resSet = prepared.executeQuery();
         short iter = 0;
-        ArrayList<String> cart = new ArrayList<String>();
+        List<String> cart = new ArrayList<>();
         while(resSet.next()){
             String name = resSet.getString("products");
             cart.add(name);
@@ -160,7 +158,7 @@ public class Database {
         PreparedStatement st = conn.prepareStatement("SELECT COUNT(*) as count FROM `filters` WHERE `user_id` = ?");
         st.setLong(1, chatId);
         ResultSet res = st.executeQuery();
-        Integer count = 0;
+        int count = 0;
         while(res.next()){
             count = res.getInt("count");
         }
@@ -180,13 +178,13 @@ public class Database {
     /**
      *Метод, который реализует просмотр последних фильтров
      */
-    public ArrayList<ArrayList<String>> showLatestFilters(long chatId) throws SQLException{
+    public List<ArrayList<String>> showLatestFilters(long chatId) throws SQLException{
         PreparedStatement st = conn.prepareStatement("SELECT `type`, `object`, `price_from`, `price_to` FROM `filters` WHERE `user_id` = ? ORDER BY `id` DESC");
         st.setLong(1, chatId);
         ResultSet res = st.executeQuery();
-        ArrayList<ArrayList<String>> list = new ArrayList<ArrayList<String>>();
+        List<ArrayList<String>> list = new ArrayList<>();
         while(res.next()){
-            ArrayList<String> line = new ArrayList<String>();
+            ArrayList<String> line = new ArrayList<>();
             line.add(res.getString("type"));
             line.add(res.getString("object"));
             line.add(res.getString("price_from"));
@@ -196,48 +194,28 @@ public class Database {
         return list;
     }
 
-    /**
-     *Метод, который реализует добавление товара в корзину по id пользователя
-     */
-    public void addToCart(long chatId) throws ClassNotFoundException, SQLException{
-        Globals global = Users.getUserGlobals(chatId);
-        ArrayList<String> products = global.cart;
-        addCart(chatId, products.get(0));
-    }
-
-    /**
-     *Метод, который реализует просмотр корзины
-     */
-    public List<Object> giveCart(long chatId) throws ClassNotFoundException, SQLException{
-        List<Object> answer = new ArrayList<>();
-        ArrayList<String> device = getCart(chatId);
-        if (!device.contains("пусто")) {
-            answer.addAll(device);
-        }
-        return answer;
-    }
 
     /**
      *Вывод моделей товара по фильтру
      */
-    public List<Object> giveDB(long chatId, boolean addFilter) throws SQLException, ClassNotFoundException {
-        List<Object> answer = new ArrayList<Object>();
+    public List<Object> giveDB(long chatId, boolean addFilter) throws SQLException {
+        List<Object> answer = new ArrayList<>();
         Globals global = Users.getUserGlobals(chatId);
-        ArrayList<String> device = ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
+        List<String> device = ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
 
         if (addFilter) {
             addFilter(chatId, global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
         }
 
-        ArrayList<String> aa = new ArrayList<String>();
+        ArrayList<String> aa = new ArrayList<>();
 
         if (device.contains("Нет таких товаров")) {
             aa.add("Нету");
         } else {
-            for (int i = 0; i < device.size(); i++) {
-                aa.add(device.get(i));
+            for (String s : device) {
+                aa.add(s);
                 global.cart = aa;
-                answer.add(device.get(i));
+                answer.add(s);
             }
         }
         return answer;
@@ -246,16 +224,16 @@ public class Database {
     /**
      *Просмотр товаров со скидками
      */
-    public ArrayList<String> giveDiscounts() throws ClassNotFoundException, SQLException{
+    public List<String> giveDiscounts() throws SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT name, discount_size FROM products WHERE on_sale = 1;");
         ResultSet resSet = prepared.executeQuery();
         short iter = 0;
-        ArrayList<String> products = new ArrayList<String>();
+        List<String> products = new ArrayList<>();
         while(resSet.next()){
             String name = resSet.getString("name");
-            Integer discount = resSet.getInt("discount_size");
+            int discount = resSet.getInt("discount_size");
             products.add(name);
-            products.add(discount.toString());
+            products.add(String.valueOf(discount));
             iter += 1;
         }
         if(iter == 0){
@@ -268,11 +246,11 @@ public class Database {
     /**
      *Изменение цены на товар с учетом скидки
      */
-    public void addDiscount(String name, double discount) throws ClassNotFoundException, SQLException{
+    public void addDiscount(String name, double discount) throws SQLException{
         PreparedStatement prepared = conn.prepareStatement("SELECT price, object, type FROM products WHERE name = ?;");
         prepared.setString(1, name);
         ResultSet res = prepared.executeQuery();
-        Integer price = 0;
+        int price = 0;
         String obj = "aa";
         String type = "aa";
         while(res.next()){
@@ -280,7 +258,6 @@ public class Database {
             obj = res.getString("object");
             type = res.getString("type");
         }
-        double a = discount/100;
         PreparedStatement st = conn.prepareStatement("DELETE FROM products WHERE name = ?;");
         st.setString(1, name);
         st.executeUpdate();
@@ -298,11 +275,11 @@ public class Database {
     /**
      *Удаление скидки и возвращение предыдущей цены
      */
-    public void deleteDiscount(String name) throws SQLException, ClassNotFoundException{
+    public void deleteDiscount(String name) throws SQLException {
         PreparedStatement prepared = conn.prepareStatement("SELECT old_price, object, type FROM products WHERE name = ?;");
         prepared.setString(1, name);
         ResultSet res = prepared.executeQuery();
-        Integer price = 0;
+        int price = 0;
         String obj = "aa";
         String type = "aa";
         while(res.next()){
@@ -326,7 +303,7 @@ public class Database {
     /**
      *Добавление частоты уведомлений
      */
-    public void addInterval(Long user_id, Integer interval) throws SQLException, ClassNotFoundException{
+    public void addInterval(Long user_id, Integer interval) throws SQLException {
         PreparedStatement prepared = conn.prepareStatement("INSERT INTO 'subscriptions' ('user_id', 'interval') VALUES (?, ?);");
         prepared.setLong(1, user_id);
         prepared.setInt(2, interval);
@@ -336,23 +313,23 @@ public class Database {
     /**
      *Проверка, пришло ли время отправки сообщения
      */
-    private Boolean readyToSend(Long user_id, Integer interval) throws SQLException, ClassNotFoundException {
+    private Boolean readyToSend(Long user_id, Integer interval) throws SQLException {
         PreparedStatement st = conn.prepareStatement("SELECT `timestamp` FROM `last_send` WHERE user_id = ?;");
         st.setLong(1, user_id);
         ResultSet res = st.executeQuery();
-        Long old_timestamp = (long) 0;
+        long old_timestamp = 0L;
         while(res.next()) {
             old_timestamp = res.getLong("timestamp");
         }
-        Long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+        long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
         return old_timestamp + interval * 1000 < timestamp;
     }
 
     /**
      *Обновление таймера
      */
-    private void updateTimestamp(Long user_id) throws SQLException, ClassNotFoundException {
-        Long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
+    private void updateTimestamp(Long user_id) throws SQLException {
+        long timestamp = new Timestamp(System.currentTimeMillis()).getTime();
         PreparedStatement upd = conn.prepareStatement("REPLACE INTO `last_send`(`user_id`, `timestamp`) VALUES(?, ?);");
         upd.setLong(1, user_id);
         upd.setLong(2, timestamp);
@@ -360,12 +337,12 @@ public class Database {
     }
 
     /**
-     *Получение всех таймеров
+     *Получение всех id пользователей
      */
-    public ArrayList<Long> getAllIntervals() throws SQLException, ClassNotFoundException {
+    public List<Long> getAllIUsers() throws SQLException {
         PreparedStatement st = conn.prepareStatement("SELECT `user_id`, `interval` FROM `subscriptions`");
         ResultSet res = st.executeQuery();
-        ArrayList<Long> users = new ArrayList<Long>();
+        List<Long> users = new ArrayList<>();
         
         while(res.next()) {
             Long user_id = res.getLong("user_id");

@@ -7,7 +7,7 @@ import java.util.*;
  *Класс для реализации логики бота
  */
 public class BotLogic {
-    Database db = new Database();
+    Database db;
     Map<String, String> text_map = Map.of("HELP_TEXT", "Это онлайн магазин в котором есть опции простотра товаров и подборки товаров под себя",
             "START_TEXT", "Приветствую в нашем магазине. Выберите опцию",
             "LIST_OF_PRODUCT_TEXT", "Сегодня у нас в наличии смартфоны и ноутбуки",
@@ -36,7 +36,7 @@ public class BotLogic {
         global.priceFrom = start;
         global.priceTo = finish;
 
-        String answer = parseDB(chatId, true);
+        String answer = parseDB(chatId, false);
 
         return listAppend(answer, chatId, 6);
     }
@@ -64,7 +64,7 @@ public class BotLogic {
      *Метод для формирования ответа при просмотре корзины
      */
     public String parseCart(long chatId) throws Exception {
-        List<Object> products;
+        List<String> products;
         products = db.giveCart(chatId);
 
         StringBuilder answer = new StringBuilder();
@@ -80,17 +80,27 @@ public class BotLogic {
     }
 
     /**
+     *Метод, который реализует добавление товара в корзину по id пользователя
+     */
+    public void addToCart(long chatId) throws ClassNotFoundException, SQLException{
+        Globals global = Users.getUserGlobals(chatId);
+        ArrayList<String> products = global.cart;
+        db.addCart(chatId, products.get(0));
+    }
+
+
+    /**
      *Метод для формирования ответы при просмотре товаров со скидками
      */
-    private String parseDiscounts(long chatId) throws ClassNotFoundException, SQLException{
-        ArrayList<String> products;
+    private String parseDiscounts() throws SQLException{
+        List<String> products;
         products = db.giveDiscounts();
         StringBuilder answer = new StringBuilder();
         if (products.contains("нету ничего")) {
             answer.append("Извините, в данное время нет скидок");
         } else {
             for (int i = 0; i < products.size() - 1; i += 2) {
-                answer.append("Сегодня продается " + products.get(i) + " с " + products.get(i+1) + "% скидкой!").append("\n");
+                answer.append("Сегодня продается ").append(products.get(i)).append(" с ").append(products.get(i + 1)).append("% скидкой!").append("\n");
             }
         }
         return answer.toString();
@@ -159,12 +169,12 @@ public class BotLogic {
             case "от 40000 до 60000":
                 return priceForm("40000","60000", chatId);
             case "больше 60000":
-                priceForm("60000","100000000", chatId);
-                return db.giveDB(chatId, true);
+                return priceForm("60000","100000000", chatId);
+                //return db.giveDB(chatId, true);
             case "Корзина":
                 return listAppend("Корзина", chatId, 7);
             case "Добавить":
-                db.addToCart(chatId);
+                addToCart(chatId);
                 return listAppend("Товар успешно добавлен в корзину!", chatId, 0);
             case "Не добавлять":
                 return listAppend("Не добавлять", chatId, 0);
@@ -178,7 +188,7 @@ public class BotLogic {
             case "Скидки":
                 return listAppend("Скидки", chatId, 13);
             case "Посмотреть скидки":
-                return listAppend(parseDiscounts(chatId), chatId, 14);
+                return listAppend(parseDiscounts(), chatId, 14);
             case "Включить уведомления о скидках":
                 return listAppend("Включить уведомления о скидках", chatId, 15);
             case "30 секунд":
@@ -202,8 +212,6 @@ public class BotLogic {
      *Метод для формирования сообщения
      */
     public List<Object> listAppend(String text, Long chatId, Integer actionType) {
-        List<Object> params = Arrays.asList(text, chatId, actionType);
-
-        return params;
+        return List.of(text, chatId, actionType);
     }
 }
