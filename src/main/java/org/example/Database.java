@@ -15,6 +15,7 @@ import java.util.List;
 public class Database {
     private Connection conn;
     private Statement statement;
+    Users us = new Users();
 
     /**
      *Метод для подключения базы данных
@@ -126,7 +127,7 @@ public class Database {
     /**
      *Метод, который реализует удаление корзины
      */
-    public void cleanCart(long chatId) throws SQLException{
+    public void deleteCart(long chatId) throws SQLException{
         PreparedStatement st = conn.prepareStatement("DELETE FROM cart WHERE id = ?;");
         st.setLong(1, chatId);
         st.executeUpdate();
@@ -178,13 +179,13 @@ public class Database {
     /**
      *Метод, который реализует просмотр последних фильтров
      */
-    public List<ArrayList<String>> showLatestFilters(long chatId) throws SQLException{
+    public List<List<String>> showLatestFilters(long chatId) throws SQLException{
         PreparedStatement st = conn.prepareStatement("SELECT `type`, `object`, `price_from`, `price_to` FROM `filters` WHERE `user_id` = ? ORDER BY `id` DESC");
         st.setLong(1, chatId);
         ResultSet res = st.executeQuery();
-        List<ArrayList<String>> list = new ArrayList<>();
+        List<List<String>> list = new ArrayList<>();
         while(res.next()){
-            ArrayList<String> line = new ArrayList<>();
+            List<String> line = new ArrayList<>();
             line.add(res.getString("type"));
             line.add(res.getString("object"));
             line.add(res.getString("price_from"));
@@ -200,14 +201,14 @@ public class Database {
      */
     public List<Object> giveDB(long chatId, boolean addFilter) throws SQLException {
         List<Object> answer = new ArrayList<>();
-        Globals global = Users.getUserGlobals(chatId);
+        Globals global = us.getUserGlobals(chatId);
         List<String> device = ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
 
         if (addFilter) {
             addFilter(chatId, global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
         }
 
-        ArrayList<String> aa = new ArrayList<>();
+        List<String> aa = new ArrayList<>();
 
         if (device.contains("Нет таких товаров")) {
             aa.add("Нету");
@@ -366,5 +367,78 @@ public class Database {
         pr.setLong(1, user_id);
         pr.executeUpdate();
     }
+
+    /**
+     * Вывод всех продуктов
+     */
+    public List<String> ShowAllProducts() throws SQLException{
+        PreparedStatement st = conn.prepareStatement("SELECT `name` FROM `products`");
+        ResultSet res = st.executeQuery();
+        List<String> products = new ArrayList<>();
+        while(res.next()) {
+            products.add(res.getString("name"));
+        }
+
+        return products;
+    }
+
+    /**
+     * Просмотр отзывов на продукт
+     */
+    public String ShowReviews(String name) throws SQLException {
+        PreparedStatement st = conn.prepareStatement("SELECT `reviews` FROM `products` WHERE `name` = ?");
+        st.setString(1, name);
+        ResultSet res = st.executeQuery();
+        String review = "aa";
+        while(res.next()) {
+            review = res.getString("reviews");
+        }
+        if(review == null){
+            review = "На этот продукт еще нет отзывов";
+        }
+        return review;
+    }
+
+    /**
+     * Добавление отзыва
+     */
+    public void AddProductReview(String name, String review) throws SQLException{
+        PreparedStatement prepared = conn.prepareStatement("SELECT price, object, type, on_sale, discount_size, old_price, reviews FROM products WHERE name = ?;");
+        prepared.setString(1, name);
+        ResultSet res = prepared.executeQuery();
+        int price = 0;
+        String obj = "aa";
+        String type = "aa";
+        int on_sale = 0;
+        int discount_size = 0;
+        int old_price = 0;
+        String rev = "aa";
+        while(res.next()){
+            price = res.getInt("price");
+            obj = res.getString("object");
+            type = res.getString("type");
+            on_sale = res.getInt("on_sale");
+            discount_size = res.getInt("discount_size");
+            old_price = res.getInt("old_price");
+            rev = res.getString("reviews");
+        }
+        if(rev != null){
+            review = rev + ", " + review;
+        }
+        PreparedStatement st = conn.prepareStatement("DELETE FROM products WHERE name = ?;");
+        st.setString(1, name);
+        st.executeUpdate();
+        PreparedStatement prep = conn.prepareStatement("INSERT INTO 'products' ('on_sale', 'discount_size','price', 'name', 'object', 'type', 'old_price', 'reviews') VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
+        prep.setInt(1, on_sale);
+        prep.setDouble(2, discount_size);
+        prep.setDouble(3, price);
+        prep.setString(4, name);
+        prep.setString(5, obj);
+        prep.setString(6, type);
+        prep.setDouble(7, old_price);
+        prep.setString(8, review);
+        prep.executeUpdate();
+    }
+
 }
 
