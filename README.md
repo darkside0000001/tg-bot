@@ -20,10 +20,16 @@ Xiaomi Poco F4
 Б) Asus Rog 5
 Б) Телефон хороший
 
-Инстркция по деплою бота на сервер:
-Подключаемся по ssh к vds 
-Устанавливаем java sudo: apt install default-jdk 
-Переносим файлы нашего проекта на сервер через scp: scp -r /mnt/c/Users/Admin/Desktop/tg-bot root@176.124.206.9:~/jb 
-Скачиваем maven: sudo apt install maven
-Билдим проект и запускаем утилитой maven
-команда запуска: root@v1271736:~/jb# ./apache-maven-3.8.6/bin/mvn exec:java -Dexec.mainClass="org.example.Main"
+## Инструкция по деплою бота на сервер:
+
+1)Подключаемся по ssh к vds 
+
+2)Устанавливаем java: ```sudo apt install default-jdk```
+
+3)Переносим файлы нашего проекта на сервер через scp: ```scp -r /mnt/c/Users/Admin/Desktop/tg-bot root@176.124.206.9:~/jb```
+
+4)Скачиваем maven: ```sudo apt install maven```
+
+5)Билдим проект и запускаем утилитой maven 
+
+команда запуска: ```root@v1271736:~/jb# ./apache-maven-3.8.6/bin/mvn exec:java -Dexec.mainClass="org.example.Main"```
