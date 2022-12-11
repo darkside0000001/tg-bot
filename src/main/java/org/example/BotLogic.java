@@ -14,7 +14,7 @@ public class BotLogic {
             "MODELS_TEXT", "Модели каких товаров хотите посмотреть?",
             "ERROR_TEXT", "Извините, команда не существует",
             "START_TEXT_cons", "Приветствую в нашем магазине. Наберите /help для просмотра списка команд",
-            "HELP_TEXT_cons", "/get - вывод списка товаров, /seeModels - вывод моделей товаров, /pick - подобрать, Мои фильтры - просмотр фильтров, Корзина - меню корзины, Скидки - меню скидок",
+            "HELP_TEXT_cons", "/get - вывод списка товаров, /seeModels - вывод моделей товаров, /pick - подобрать, Мои фильтры - просмотр фильтров, Корзина - меню корзины, Скидки - меню скидок, Отзывы - меню отзывов",
             "MODELS_TEXT_cons", "Какие товары хотите посмотреть? /smartphone и /notebooks");
 
     // 0 - sendMessage
@@ -84,7 +84,7 @@ public class BotLogic {
      */
     public void addToCart(long chatId) throws ClassNotFoundException, SQLException{
         Globals global = Users.getUserGlobals(chatId);
-        ArrayList<String> products = global.cart;
+        List<String> products = global.cart;
         db.addCart(chatId, products.get(0));
     }
 
@@ -107,11 +107,32 @@ public class BotLogic {
     }
 
     /**
+     *Метод, который реализует очистку корзины
+     */
+    public void cleanCart(long chatId) throws SQLException, ClassNotFoundException {
+        db.deleteCart(chatId);
+    }
+
+    private String parseReviews(String name) {
+        try {
+            return db.ShowReviews(name);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
      *Метод, который отвечает за обработку сообщений от пользователя
      */
-    public List<Object> parseMessage(String textMsg, long chatId, String type_bot) throws Exception {
+    public List<Object> parseMessage(String textMsg, long chatId, String type_bot, String name) throws Exception {
         String txt;
         Globals global = Users.getUserGlobals(chatId);
+        if(global.need_review == 1){
+            global.review = textMsg;
+            db.AddProductReview(global.product_to_review, textMsg);
+            global.need_review = 0;
+            return listAppend("Отзыв успешно добавлен", chatId, 0);
+        }
 
         switch (textMsg) {
             case "Старт":
@@ -181,7 +202,7 @@ public class BotLogic {
             case "Посмотреть корзину":
                 return listAppend(parseCart(chatId), chatId, 0);
             case "Очистить корзину":
-                db.cleanCart(chatId);
+                cleanCart(chatId);
                 return listAppend("Корзина очищена", chatId, 0);
             case "Мои фильтры":
                 return listAppend("Мои фильтры", chatId, 12);
@@ -203,6 +224,12 @@ public class BotLogic {
             case "Отписаться":
                 db.deleteSubs(chatId);
                 return listAppend("Уведомления выключены", chatId, 0);
+            case "Отзывы":
+                return listAppend("Отзывы", chatId, 16);
+            case "Посмотреть отзывы":
+                return listAppend(parseReviews(name), chatId, 17);
+            case "Написать отзыв":
+                return listAppend("Написать отзыв", chatId, 18);
             default:
                 return listAppend(text_map.get("ERROR_TEXT"), chatId, 0);
         }

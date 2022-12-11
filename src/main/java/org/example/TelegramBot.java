@@ -23,6 +23,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     Database db = new Database();
     BotLogic bl = new BotLogic(db);
     public String BotToken = System.getenv("BOT_TOKEN");
+
     public TelegramBot() {
         ExecutorService executor = Executors.newFixedThreadPool(10);
         executor.submit(() -> {
@@ -43,7 +44,7 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
     @Override
     public String getBotUsername() {
-        return "MBot";
+        return "TestBot";
     }
 
     /**
@@ -68,7 +69,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
             List<Object> Answer = null;
             try {
-                Answer = bl.parseMessage(messageText, chatId, "tele");
+                Answer = bl.parseMessage(messageText, chatId, "tele", "");
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -126,26 +127,95 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sendDiscountsOptions(chatId);
             } else if((Integer) Answer.get(2) == 15){
                 sendSubscriptionType(chatId);
+            } else if((Integer) Answer.get(2) == 16){
+                sendReviewsOptions(chatId);
+            } else if((Integer) Answer.get(2) == 17){
+                try {
+                    List<String> list = db.ShowAllProducts();
+
+                    SendMessage message = new SendMessage();
+                    message.setText("Выберите продукт:");
+                    message.setChatId(chatId);
+        
+                    InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                    List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                    for (String line : list) {
+                        List<InlineKeyboardButton> rowInline = new ArrayList<>();
+
+                        InlineKeyboardButton button = new InlineKeyboardButton();
+                        button.setText(String.format(line));
+                        button.setCallbackData(String.format("fast_products|%s", line));
+
+                        rowInline.add(button);
+                        rowsInline.add(rowInline);
+                    }
+                    markupInline.setKeyboard(rowsInline);
+                    message.setReplyMarkup(markupInline);
+
+                    try {
+                        execute(message); // Sending our message object to user
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            else if((Integer) Answer.get(2) == 18){
+                try {
+                    List<String> list = db.ShowAllProducts();
+
+                    SendMessage message = new SendMessage();
+                    message.setText("Выберите продукт:");
+                    message.setChatId(chatId);
+        
+                    InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                    List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                    for (String line : list) {
+                        List<InlineKeyboardButton> rowInline = new ArrayList<>();
+
+                        InlineKeyboardButton button = new InlineKeyboardButton();
+                        button.setText(String.format(line));
+                        button.setCallbackData(String.format("add_review|%s", line));
+
+                        rowInline.add(button);
+                        rowsInline.add(rowInline);
+                    }
+                    markupInline.setKeyboard(rowsInline);
+                    message.setReplyMarkup(markupInline);
+
+                    try {
+                        execute(message); // Sending our message object to user
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
             else if((Integer) Answer.get(2) == 14){
                 //sendDiscounts(chatId);
                 try {
-                    sendMessage(chatId,(String) bl.parseMessage("Посмотреть скидки", chatId, "cons").get(0));
+                    sendMessage(chatId,(String) bl.parseMessage("Посмотреть скидки", chatId, "cons", "").get(0));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             }
             else if((Integer) Answer.get(2) == 11){
                 try {
-                    db.cleanCart(chatId);
+                    bl.cleanCart(chatId);
                     //deleteCart(chatId);
                 } catch (SQLException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
                 }
             }else if((Integer) Answer.get(2) == 12){
                 try {
-                    List<ArrayList<String>> list = db.showLatestFilters(chatId);
+                    List<List<String>> list = db.showLatestFilters(chatId);
 
                     SendMessage message = new SendMessage();
                     message.setChatId(chatId);
@@ -202,6 +272,20 @@ public class TelegramBot extends TelegramLongPollingBot {
                     throw new RuntimeException(e);
                 }
             }
+
+            if (tokens[0].equals("fast_products")) {
+                String line = tokens[1];
+                try {
+                    sendReviews(chatId, line);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            if (tokens[0].equals("add_review")) {
+                String line = tokens[1];
+                AddReview(chatId, line);
+            }
         }
     }
 
@@ -233,6 +317,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         row = new KeyboardRow();
         
         row.add("Скидки");
+        row.add("Отзывы");
         keyboardRows.add(row);
 
         keyboardMarkup.setKeyboard(keyboardRows);
@@ -510,6 +595,9 @@ public class TelegramBot extends TelegramLongPollingBot {
         }
     }
 
+    /**
+     * Таймеры
+     */
     private void sendSubscriptionType(long chatId){
         SendMessage message = new SendMessage();
         String text = "Выберете частоту уведомлений";
@@ -533,6 +621,68 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         message.setReplyMarkup(keyboardMarkup);
 
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Меню отзывов
+     */
+
+    private void sendReviewsOptions(long chatId){
+        SendMessage message = new SendMessage();
+        String text = "Выберите опцию";
+        message.setChatId(String.valueOf(chatId));
+        message.setText(text);
+
+        ReplyKeyboardMarkup keyboardMarkup = new ReplyKeyboardMarkup();
+        List<KeyboardRow> keyboardRows = new ArrayList<>();
+
+        KeyboardRow row = new KeyboardRow();
+        row.add("Посмотреть отзывы");
+        row.add("Написать отзыв");
+        keyboardRows.add(row);
+        keyboardMarkup.setKeyboard(keyboardRows);
+
+        message.setReplyMarkup(keyboardMarkup);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Просмотр отзывов
+     */
+    private void sendReviews(long chatId, String name) throws SQLException{
+        String review = db.ShowReviews(name);
+        String[] reviews = review.split("\\, ");
+        int iter = 1;
+        if(review.equals("На этот продукт еще нет отзывов")){
+            sendMessage(chatId, "На этот продукт еще нет отзывов");
+            return;
+        }
+        for(String i : reviews){
+            sendMessage(chatId, "Отзыв " + Integer.toString(iter) + ": " + i);
+            iter += 1;
+        }
+    }
+
+    /**
+     * Добавление отзыва
+     */
+    private void AddReview(long chatId, String line){
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText("Напишите отзыв");
+        Globals global = Users.getUserGlobals(chatId);
+        global.need_review = 1;
+        global.product_to_review = line;
         try {
             execute(message);
         } catch (TelegramApiException e) {

@@ -2,6 +2,8 @@ import org.example.BotLogic;
 import org.example.Database;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+
+import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +24,7 @@ public class Tests {
                 List.of("HP 15s-eq1332ur")
             );
 
-            String answer = (String)botLogic.parseMessage("Посмотреть корзину",-1, "tele").get(0);
+            String answer = (String)botLogic.parseMessage("Посмотреть корзину",-1, "tele", "").get(0);
             assertEquals("У вас в корзине HP 15s-eq1332ur\n", answer);
         }
 
@@ -55,8 +57,8 @@ public class Tests {
      */
     @Test
     public void cleanCartTest() throws Exception {
-        dbMock.cleanCart(-1);
-        verify(dbMock).cleanCart(-1);
+        botLogic.cleanCart(-1);
+        verify(dbMock).deleteCart(-1);
     }
 
     /**
@@ -67,7 +69,17 @@ public class Tests {
         when(dbMock.giveDiscounts()).thenReturn(
                 List.of("HP 15s-eq1332ur", "40")
             );
-        String answer = (String) botLogic.parseMessage("Посмотреть скидки", -1, "tele").get(0);
+        String answer = (String) botLogic.parseMessage("Посмотреть скидки", -1, "tele", "").get(0);
         assertEquals("Сегодня продается HP 15s-eq1332ur с 40% скидкой!\n", answer);
+    }
+
+    /**
+     * Тест на просмотр отзывов
+     */
+    @Test
+    public void CheckReviewsTest() throws Exception {
+        when(dbMock.ShowReviews("Test")).thenReturn("Товар хороший");
+        String answer = (String) botLogic.parseMessage("Посмотреть отзывы", -1, "tele", "Test").get(0);
+        assertEquals("Товар хороший", answer);
     }
 }
