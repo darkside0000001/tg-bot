@@ -13,7 +13,9 @@ import static java.lang.Thread.*;
 public class EventLoop extends TelegramLongPollingBot {
     Database db = new Database();
     BotLogic bl = new BotLogic(db);
-    public String BotToken = System.getenv("BOT_TOKEN");
+    SendNotice tip = new SendNotice();
+    //public String BotToken = System.getenv("BOT_TOKEN");
+    public String BotToken = "5882986726:AAEBgTn5UJc0jF7J2ieydhm9Rf9y-PZsV48";
 
     /**
      *Реализация отправки сообщений о скидках пользователю
@@ -23,11 +25,11 @@ public class EventLoop extends TelegramLongPollingBot {
             List<Long> users = db.getAllIUsers();
             for (Long user : users) {
                 if (user != 0L && type.equals("tele")) {
-                    sendMessage(user, (String) bl.parseMessage("Посмотреть скидки", 0, "tele").get(0));
+                    tip.sendTelegram(user, (String) bl.parseMessage("Посмотреть скидки", 0, "tele", "").get(0));
                     //sendDiscounts(user);
                 }
                 else if (user == 0L && type.equals("cons")) {
-                    System.out.println(bl.parseMessage("Посмотреть скидки", 0, "cons").get(0));
+                    tip.SendConsole(bl.parseMessage("Посмотреть скидки", 0, "cons", "").get(0));
                 }
             }
             try {
@@ -43,7 +45,7 @@ public class EventLoop extends TelegramLongPollingBot {
      */
     @Override
     public String getBotUsername() {
-        return "MBot";
+        return "TestBot";
     }
 
 
@@ -64,19 +66,19 @@ public class EventLoop extends TelegramLongPollingBot {
 
     }
 
-    /**
-     *Метод, который реализует отправку сообщений пользователю в телеграме
-     */
-    private void sendMessage(Long chatId, String textToSend) {
-        SendMessage message = new SendMessage();
-        message.setChatId(String.valueOf(chatId));
-        message.setText(textToSend);
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-    }
+    // /**
+    //  *Метод, который реализует отправку сообщений пользователю в телеграме
+    //  */
+    // private void sendMessage(Long chatId, String textToSend) {
+    //     SendMessage message = new SendMessage();
+    //     message.setChatId(String.valueOf(chatId));
+    //     message.setText(textToSend);
+    //     try {
+    //         execute(message);
+    //     } catch (TelegramApiException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 
 }
 

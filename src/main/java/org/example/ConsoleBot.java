@@ -14,7 +14,6 @@ public class ConsoleBot {
     BotLogic blogic = new BotLogic(db);
     Scanner in = new Scanner(System.in);
 
-
     public ConsoleBot() throws Exception {
         System.out.println("Приветствую в нашем магазине. Наберите '/help' для просмотра списка команд");
         while (true) {
@@ -31,7 +30,7 @@ public class ConsoleBot {
             });
 
             String line = in.nextLine();
-            List<Object> Answer = blogic.parseMessage(line, 0, "cons");
+            List<Object> Answer = blogic.parseMessage(line, 0, "cons", "");
             if ((Integer)Answer.get(2) == 0 || (Integer)Answer.get(2) == 1) {
                 sendMessage((String)Answer.get(0));
             } else if ((Integer)Answer.get(2) == 3) {
@@ -45,7 +44,7 @@ public class ConsoleBot {
                 if(answer.equals("Посмотреть корзину")){
                     sendMessage(db.giveCart(0).get(0));
                 } else if(answer.equals("Очистить корзину")) {
-                    db.cleanCart(0);
+                    blogic.cleanCart(0);
                     System.out.println("Корзина очищена");
                 }
             } else if ((Integer)Answer.get(2) == 12) {
@@ -55,7 +54,7 @@ public class ConsoleBot {
                 String answer = in.nextLine();
                 if (answer.equals("Посмотреть скидки")) {
                     //sendDiscounts(0);
-                    sendMessage((String) blogic.parseMessage("Посмотреть скидки", 0, "cons").get(0));
+                    sendMessage((String) blogic.parseMessage("Посмотреть скидки", 0, "cons", "").get(0));
                 } else if (answer.equals("Подключить уведомления о скидках")) {
                     System.out.println("Выберите частоту уведомлений - 30 секунд, 1 чаc, 1 день, Отписаться");
                 } else if (answer.equals("30 секунд")) {
@@ -70,6 +69,30 @@ public class ConsoleBot {
                 } else if (answer.equals("Отписаться")) {
                     db.deleteSubs(0L);
                     System.out.println("Уведомления отключены");
+                }
+            } else if((Integer)Answer.get(2) == 16) {
+                System.out.println("Выберите опцию - Посмотреть отзывы, Написать отзыв");
+                String answer = in.nextLine();
+                if (answer.equals("Посмотреть отзывы")) {
+                    //sendDiscounts(0);
+                    List<String> products = db.ShowAllProducts();
+                    for (String product : products) {
+                        System.out.println(product);
+                    }
+                    answer = in.nextLine();
+                    sendMessage((String) blogic.parseMessage("Посмотреть отзывы", 0, "cons", answer).get(0));
+                }
+                else if(answer.equals("Написать отзыв")) {
+                    List<String> products = db.ShowAllProducts();
+                    for (String product : products) {
+                        System.out.println(product);
+                    }
+                    answer = in.nextLine();
+                    System.out.println("Напишите отзыв:");
+                    String answer2 = in.nextLine();
+                    db.AddProductReview(answer, answer2);
+                    System.out.println("Отзыв записан");
+
                 }
             }
         }
