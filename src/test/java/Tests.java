@@ -1,10 +1,18 @@
-import org.example.BotLogic;
-import org.example.Database;
+import org.example.Helpers.BotLogic;
+import org.example.Helpers.Database;
+import org.example.Helpers.EventLoop;
+import org.example.Helpers.User;
+import org.example.Notifier.NoticeType;
+import org.example.Notifier.TestNotice;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -33,7 +41,8 @@ public class Tests {
      */
     @Test
     public void parseDBTest() throws Exception {
-            when(dbMock.giveDB(-1, true)).thenReturn(
+            User userData = botLogic.getUserGlobals(Long.valueOf(-1));
+            when(dbMock.giveDB(-1, true, userData)).thenReturn(
                     List.of("Asus Rog 5")
             );
             String answer = botLogic.parseDB( -1, true);
@@ -81,5 +90,12 @@ public class Tests {
         when(dbMock.ShowReviews("Test")).thenReturn("Товар хороший");
         String answer = (String) botLogic.parseMessage("Посмотреть отзывы", -1, "tele", "Test").get(0);
         assertEquals("Товар хороший", answer);
+    }
+
+    @Test
+    public void NoticeTest() throws Exception {
+        TestNotice testNotice = new TestNotice();
+        String answer = testNotice.sendMessage(-1L, "Сегодня продается Asus Rog 5 с 60% скидкой!\n");
+        assertEquals("Сегодня продается Asus Rog 5 с 60% скидкой!\n", answer);
     }
 }
