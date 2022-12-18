@@ -6,21 +6,27 @@ import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.example.Helpers.BotLogic;
+import org.example.Helpers.Database;
+import org.example.Helpers.EventLoop;
+import org.example.Helpers.User;
+import org.example.Notifier.NoticeType;
+
 /**
  *Класс для реализации бота в телеграме
  */
 public class ConsoleBot {
     Database db = new Database();
-    BotLogic blogic = new BotLogic(db);
+    BotLogic logic = new BotLogic(db);
     Scanner in = new Scanner(System.in);
 
     public ConsoleBot() throws Exception {
         System.out.println("Приветствую в нашем магазине. Наберите '/help' для просмотра списка команд");
         while (true) {
-            ExecutorService executor = Executors.newFixedThreadPool(10);
+            ExecutorService executor = Executors.newFixedThreadPool(1);
             executor.submit(() -> {
                 try {
-                    new EventLoop("cons");
+                    new EventLoop(NoticeType.CONSOLE);
                 } catch (ClassNotFoundException | SQLException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -30,7 +36,7 @@ public class ConsoleBot {
             });
 
             String line = in.nextLine();
-            List<Object> Answer = blogic.parseMessage(line, 0, "cons", "");
+            List<Object> Answer = logic.parseMessage(line, 0, "cons", "");
             if ((Integer)Answer.get(2) == 0 || (Integer)Answer.get(2) == 1) {
                 sendMessage((String)Answer.get(0));
             } else if ((Integer)Answer.get(2) == 3) {
@@ -44,7 +50,7 @@ public class ConsoleBot {
                 if(answer.equals("Посмотреть корзину")){
                     sendMessage(db.giveCart(0).get(0));
                 } else if(answer.equals("Очистить корзину")) {
-                    blogic.cleanCart(0);
+                    logic.cleanCart(0);
                     System.out.println("Корзина очищена");
                 }
             } else if ((Integer)Answer.get(2) == 12) {
@@ -54,7 +60,7 @@ public class ConsoleBot {
                 String answer = in.nextLine();
                 if (answer.equals("Посмотреть скидки")) {
                     //sendDiscounts(0);
-                    sendMessage((String) blogic.parseMessage("Посмотреть скидки", 0, "cons", "").get(0));
+                    sendMessage((String) logic.parseMessage("Посмотреть скидки", 0, "cons", "").get(0));
                 } else if (answer.equals("Подключить уведомления о скидках")) {
                     System.out.println("Выберите частоту уведомлений - 30 секунд, 1 чаc, 1 день, Отписаться");
                 } else if (answer.equals("30 секунд")) {
@@ -80,7 +86,7 @@ public class ConsoleBot {
                         System.out.println(product);
                     }
                     answer = in.nextLine();
-                    sendMessage((String) blogic.parseMessage("Посмотреть отзывы", 0, "cons", answer).get(0));
+                    sendMessage((String) logic.parseMessage("Посмотреть отзывы", 0, "cons", answer).get(0));
                 }
                 else if(answer.equals("Написать отзыв")) {
                     List<String> products = db.ShowAllProducts();
@@ -116,7 +122,7 @@ public class ConsoleBot {
      *Метод, который реализует подбор товаров
      */
     private String sendQuestionType() throws Exception {
-        Globals global = Users.getUserGlobals((long) 0);
+        User global = logic.getUserGlobals((long) 0);
         System.out.println("Что вы хотите посмотреть? (smartphone, notebook)");
         global.type = in.nextLine();
         System.out.println("Цель (gaming, study, work)");
@@ -137,12 +143,12 @@ public class ConsoleBot {
             global.priceFrom = "60000";
             global.priceTo = "600000";
         }
-        String product = blogic.parseDB(0, true);
+        String product = logic.parseDB(0, true);
         if (!Objects.equals(product, "Извините, в данное время нет таких товаров")) {
             sendMessage(product + "\n Добавить товар в корзину? Да / Нет");
             String line = in.nextLine();
             if (line.equals("Да")) {
-                blogic.addToCart(0);
+                logic.addToCart(0);
                 return "Товар добавлен";
             } else {
                 return "Товар не был добавлен в корзину";

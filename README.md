@@ -32,4 +32,4 @@ Xiaomi Poco F4
 
 5)Билдим проект и запускаем утилитой maven 
 
-команда запуска: ```root@v1271736:~/jb# ./apache-maven-3.8.6/bin/mvn exec:java -Dexec.mainClass="org.example.Main"```
+команда запуска: ```BOT_TOKEN=token root@v1271736:~/jb# ./apache-maven-3.8.6/bin/mvn exec:java -Dexec.mainClass="org.example.Main"```
