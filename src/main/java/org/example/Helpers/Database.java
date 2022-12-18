@@ -1,11 +1,10 @@
-package org.example;
+package org.example.Helpers;
 import java.sql.Timestamp;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,8 +13,6 @@ import java.util.List;
  */
 public class Database {
     private Connection conn;
-    private Statement statement;
-    Users us = new Users();
 
     /**
      *Метод для подключения базы данных
@@ -24,7 +21,6 @@ public class Database {
         try{
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection("jdbc:sqlite:sq1.db");
-            statement = conn.createStatement();
         }
         catch(Exception e){
             System.out.println(e.getMessage());
@@ -199,13 +195,13 @@ public class Database {
     /**
      *Вывод моделей товара по фильтру
      */
-    public List<Object> giveDB(long chatId, boolean addFilter) throws SQLException {
+    public List<Object> giveDB(long chatId, boolean addFilter, User userData) throws SQLException {
         List<Object> answer = new ArrayList<>();
-        Globals global = us.getUserGlobals(chatId);
-        List<String> device = ReadDB(global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
+        
+        List<String> device = ReadDB(userData.type, userData.obj, Integer.parseInt(userData.priceFrom), Integer.parseInt(userData.priceTo));
 
         if (addFilter) {
-            addFilter(chatId, global.type, global.obj, Integer.parseInt(global.priceFrom), Integer.parseInt(global.priceTo));
+            addFilter(chatId, userData.type, userData.obj, Integer.parseInt(userData.priceFrom), Integer.parseInt(userData.priceTo));
         }
 
         List<String> aa = new ArrayList<>();
@@ -215,7 +211,7 @@ public class Database {
         } else {
             for (String s : device) {
                 aa.add(s);
-                global.cart = aa;
+                userData.cart = aa;
                 answer.add(s);
             }
         }
