@@ -1,22 +1,16 @@
-package org.example;
+package org.example.Notifier;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-/**
- *Класс, реализующий отправку сообщений
- */
-public class SendNotice extends TelegramLongPollingBot {
-    Database db = new Database();
-    BotLogic bl = new BotLogic(db);
-    public String BotToken = System.getenv("BOT_TOKEN");
+public class TelegramNotice extends TelegramLongPollingBot implements SendNotice {
+    public String botToken = System.getenv("BOT_TOKEN");
 
     
     @Override
     public void onUpdateReceived(Update update) {
         // TODO Auto-generated method stub
-        
     }
     @Override
     public String getBotUsername() {
@@ -26,22 +20,21 @@ public class SendNotice extends TelegramLongPollingBot {
     @Override
     public String getBotToken() {
         // TODO Auto-generated method stub
-        return BotToken;
+        return botToken;
     }
+    
+    TelegramNotice() { }
 
-    public void sendTelegram(Long chatId, String textToSend) {
+    @Override
+    public String sendMessage(Long chatId, String text) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
-        message.setText(textToSend);
+        message.setText(text);
         try {
             execute(message);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+        return text;
     }
-
-    public void SendConsole(Object object){
-        System.out.println(object);
-    }
-
 }

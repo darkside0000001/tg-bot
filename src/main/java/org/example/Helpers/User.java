@@ -1,10 +1,10 @@
-package org.example;
-import java.util.*;
+package org.example.Helpers;
+import java.util.List;
 
 /**
- *Класс для работы с глобальными переменными
+ *Класс c переменными пользователя
  */
-public class Globals {
+public class User {
     public String type;
     public String obj;
     public String priceFrom;

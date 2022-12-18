@@ -1,4 +1,4 @@
-package org.example;
+package org.example.Helpers;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -7,8 +7,9 @@ import java.util.*;
  *Класс для реализации логики бота
  */
 public class BotLogic {
+    private HashMap<Long, User> userData = new HashMap<>();
     Database db;
-    Map<String, String> text_map = Map.of("HELP_TEXT", "Это онлайн магазин в котором есть опции простотра товаров и подборки товаров под себя",
+    Map<String, String> textMap = Map.of("HELP_TEXT", "Это онлайн магазин в котором есть опции простотра товаров и подборки товаров под себя",
             "START_TEXT", "Приветствую в нашем магазине. Выберите опцию",
             "LIST_OF_PRODUCT_TEXT", "Сегодня у нас в наличии смартфоны и ноутбуки",
             "MODELS_TEXT", "Модели каких товаров хотите посмотреть?",
@@ -32,7 +33,7 @@ public class BotLogic {
      *Метод для выбора ценавого диапозона
      */
     public List<Object> priceForm(String start, String finish, long chatId) throws Exception {
-        Globals global = Users.getUserGlobals(chatId);
+        User global = getUserGlobals(chatId);
         global.priceFrom = start;
         global.priceTo = finish;
 
@@ -46,7 +47,8 @@ public class BotLogic {
      */
     public String parseDB(long chatId, boolean addFilter) throws Exception {
         List<Object> products;
-        products = db.giveDB(chatId, addFilter);
+        User userData = getUserGlobals(chatId);
+        products = db.giveDB(chatId, addFilter, userData);
 
         StringBuilder answer = new StringBuilder();
 
@@ -83,7 +85,7 @@ public class BotLogic {
      *Метод, который реализует добавление товара в корзину по id пользователя
      */
     public void addToCart(long chatId) throws ClassNotFoundException, SQLException{
-        Globals global = Users.getUserGlobals(chatId);
+        User global = getUserGlobals(chatId);
         List<String> products = global.cart;
         db.addCart(chatId, products.get(0));
     }
@@ -124,9 +126,9 @@ public class BotLogic {
     /**
      *Метод, который отвечает за обработку сообщений от пользователя
      */
-    public List<Object> parseMessage(String textMsg, long chatId, String type_bot, String name) throws Exception {
+    public List<Object> parseMessage(String textMsg, long chatId, String typeBot, String name) throws Exception {
         String txt;
-        Globals global = Users.getUserGlobals(chatId);
+        User global = getUserGlobals(chatId);
         if(global.need_review == 1){
             global.review = textMsg;
             db.AddProductReview(global.product_to_review, textMsg);
@@ -137,26 +139,26 @@ public class BotLogic {
         switch (textMsg) {
             case "Старт":
             case "/start":
-                txt = text_map.get("START_TEXT");
-                if (type_bot.equals("cons")) {
-                    txt = text_map.get("START_TEXT_cons");
+                txt = textMap.get("START_TEXT");
+                if (typeBot.equals("cons")) {
+                    txt = textMap.get("START_TEXT_cons");
                 }
                 return listAppend(txt, chatId, 0);
             case "Помощь":
             case "/help":
-                txt = text_map.get("HELP_TEXT");
-                if (type_bot.equals("cons")) {
-                    txt = text_map.get("HELP_TEXT_cons");
+                txt = textMap.get("HELP_TEXT");
+                if (typeBot.equals("cons")) {
+                    txt = textMap.get("HELP_TEXT_cons");
                 }
                 return listAppend(txt, chatId, 0);
             case "Список товаров":
             case "/get":
-                return listAppend(text_map.get("LIST_OF_PRODUCT_TEXT"), chatId, 0);
+                return listAppend(textMap.get("LIST_OF_PRODUCT_TEXT"), chatId, 0);
             case "Модели товаров":
             case "/seeModels":
-                txt = text_map.get("MODELS_TEXT");
-                if (type_bot.equals("cons")) {
-                    txt = text_map.get("MODELS_TEXT_cons");
+                txt = textMap.get("MODELS_TEXT");
+                if (typeBot.equals("cons")) {
+                    txt = textMap.get("MODELS_TEXT_cons");
                 }
                 return listAppend(txt, chatId, 1);
             case "Смартфоны":
@@ -231,7 +233,7 @@ public class BotLogic {
             case "Написать отзыв":
                 return listAppend("Написать отзыв", chatId, 18);
             default:
-                return listAppend(text_map.get("ERROR_TEXT"), chatId, 0);
+                return listAppend(textMap.get("ERROR_TEXT"), chatId, 0);
         }
     }
 
@@ -240,5 +242,21 @@ public class BotLogic {
      */
     public List<Object> listAppend(String text, Long chatId, Integer actionType) {
         return List.of(text, chatId, actionType);
+    }
+
+    /**
+     *Метод, который возвращает,
+     *прикрепляенные к пользователю
+     *глобальные переменные
+     */
+    public User getUserGlobals(Long key) {
+        return userData.computeIfAbsent(key, aLong -> new User());
+    }
+
+    /**
+     *Метод, который прикрепляет к пользователю глобальные переменные
+     */
+    public void setUserGlobals(Long key, User value) {
+        userData.put(key, value);
     }
 }
