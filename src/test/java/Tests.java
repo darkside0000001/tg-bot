@@ -92,10 +92,17 @@ public class Tests {
         assertEquals("Товар хороший", answer);
     }
 
+    /**
+     * Тест на отправку сообщений
+     */
     @Test
     public void NoticeTest() throws Exception {
         TestNotice testNotice = new TestNotice();
-        String answer = testNotice.sendMessage(-1L, "Сегодня продается Asus Rog 5 с 60% скидкой!\n");
-        assertEquals("Сегодня продается Asus Rog 5 с 60% скидкой!\n", answer);
+        List<String> answer = testNotice.getTestList();
+        List<String> expected = new ArrayList<>();
+        expected.add("Сегодня продается Asus Rog 5 с 60% скидкой!\n");
+        expected.add("Сегодня продается Asus Rog 5 с 60% скидкой!\n");
+        EventLoop eventLoop = new EventLoop(NoticeType.TEST);
+        assertEquals(expected, answer);
     }
 }

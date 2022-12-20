@@ -7,5 +7,5 @@ public interface SendNotice {
     /**
      *Метод, реализующий отправку сообщений
      */
-    public String sendMessage(Long chatId, String text);
+    public void sendMessage(Long chatId, String text);
 }
