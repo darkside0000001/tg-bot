@@ -26,7 +26,7 @@ public class TelegramNotice extends TelegramLongPollingBot implements SendNotice
     TelegramNotice() { }
 
     @Override
-    public String sendMessage(Long chatId, String text) {
+    public void sendMessage(Long chatId, String text) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(text);
@@ -35,6 +35,5 @@ public class TelegramNotice extends TelegramLongPollingBot implements SendNotice
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
-        return text;
     }
 }
